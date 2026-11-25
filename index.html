@@ -1,0 +1,3282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Живой мир — 3D стратегия</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #8ab8dc;
+    color: white;
+}
+
+#game {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+}
+
+.panel {
+    position: fixed;
+    z-index: 10;
+    background: rgba(12, 20, 25, 0.86);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+#topPanel {
+    top: 12px;
+    left: 12px;
+    min-width: 225px;
+}
+
+#topPanel h1 {
+    font-size: 21px;
+    margin-bottom: 10px;
+}
+
+.team {
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+#actions {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#languageSelect {
+    width: 100%;
+    padding: 9px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #789;
+    background: #253e50;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 14px;
+    background: #253e50;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+button:hover {
+    background: #3d6279;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+#status {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    z-index: 20;
+    background: rgba(12, 20, 25, 0.9);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    max-width: 48vw;
+    text-align: center;
+}
+
+#countdownBanner {
+    display: none;
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    background: rgba(18, 28, 38, 0.94);
+    border: 2px solid rgba(255, 208, 72, 0.85);
+    border-radius: 14px;
+    padding: 14px 24px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+#countdownBanner.active {
+    display: block;
+}
+
+#countdownBanner .cd-title {
+    font-size: 15px;
+    color: #ffd048;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+#countdownBanner .cd-timer {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+#countdownBanner .cd-sub {
+    font-size: 12px;
+    color: #cde0f0;
+    margin-top: 4px;
+}
+
+#victoryModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(6, 11, 16, 0.72);
+    align-items: center;
+    justify-content: center;
+}
+
+#victoryModal.active {
+    display: flex;
+}
+
+.victory-card {
+    background: rgba(15, 25, 34, 0.96);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 28px 36px;
+    text-align: center;
+    max-width: 430px;
+    width: 90%;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+}
+
+.victory-card h2 {
+    font-size: 26px;
+    margin-bottom: 10px;
+}
+
+.victory-card p {
+    font-size: 15px;
+    color: #d6e2ec;
+    margin-bottom: 20px;
+    line-height: 1.45;
+}
+
+.victory-card button {
+    padding: 12px 22px;
+    font-size: 15px;
+    background: #2d7a46;
+}
+
+.victory-card button:hover {
+    background: #3a9959;
+}
+
+/* =================================
+   МОБИЛЬНАЯ ВЕРСИЯ ANDROID И IOS
+================================= */
+
+@media (max-width: 700px) {
+
+    body {
+        overflow: hidden;
+    }
+
+    #game {
+        width: 100vw;
+        height: 100dvh;
+        touch-action: none;
+    }
+
+    #topPanel {
+        top: 6px;
+        left: 6px;
+        min-width: 0;
+        width: 190px;
+        padding: 8px;
+        border-radius: 9px;
+    }
+
+    #topPanel h1 {
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+
+    .team {
+        font-size: 11px;
+        margin: 4px 0;
+    }
+
+    #languageSelect {
+        padding: 6px;
+        margin: 4px 0;
+        font-size: 12px;
+    }
+
+    #actions {
+        top: 6px;
+        right: 6px;
+        gap: 5px;
+    }
+
+    button {
+        padding: 9px 10px;
+        font-size: 11px;
+        border-radius: 7px;
+    }
+
+    #status {
+        bottom: 6px;
+        width: calc(100% - 12px);
+        max-width: none;
+        padding: 7px;
+        font-size: 11px;
+    }
+
+    #countdownBanner {
+        top: 115px;
+        padding: 10px 16px;
+    }
+
+    #countdownBanner .cd-timer {
+        font-size: 23px;
+    }
+
+    .victory-card {
+        padding: 20px;
+        width: 92%;
+    }
+
+    .victory-card h2 {
+        font-size: 22px;
+    }
+}
+
+/* ==========================================
+   АДАПТАЦИЯ ДЛЯ ПК, ПЛАНШЕТОВ И ТЕЛЕФОНОВ
+========================================== */
+html, body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+}
+
+#game {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+button, select {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.team-panel {
+    max-width: calc(50vw - 16px);
+}
+
+.team-panel button {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 700px) {
+    #topPanel {
+        top: max(6px, env(safe-area-inset-top));
+        left: max(6px, env(safe-area-inset-left));
+        width: min(190px, 48vw);
+        max-height: 38vh;
+        overflow-y: auto;
+    }
+
+    #actions {
+        top: max(6px, env(safe-area-inset-top));
+        right: max(6px, env(safe-area-inset-right));
+        gap: 5px;
+    }
+
+    #actions button {
+        min-height: 34px;
+        padding: 8px 9px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .team-panel {
+        bottom: max(48px, calc(env(safe-area-inset-bottom) + 42px)) !important;
+        width: auto;
+        max-width: calc(50vw - 12px);
+        grid-template-columns: repeat(3, minmax(36px, 44px)) !important;
+        gap: 4px !important;
+        padding: 5px !important;
+        border-radius: 9px !important;
+    }
+
+    .team-panel button {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 3px !important;
+        border-radius: 7px !important;
+    }
+
+    #status {
+        bottom: max(4px, env(safe-area-inset-bottom));
+        left: 50%;
+        width: calc(100% - 12px);
+        max-width: none;
+        padding: 6px 8px;
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    #countdownBanner {
+        top: 42%;
+        max-width: calc(100vw - 24px);
+    }
+
+    .victory-card {
+        max-height: 85dvh;
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 380px) {
+    #topPanel { width: 158px; }
+    #topPanel h1 { font-size: 13px; }
+    .team { font-size: 10px; }
+    #actions button { font-size: 10px; padding: 7px 6px; }
+    .team-panel {
+        grid-template-columns: repeat(3, 38px) !important;
+        gap: 3px !important;
+        padding: 4px !important;
+    }
+    .team-panel button {
+        width: 38px !important;
+        height: 38px !important;
+    }
+}
+
+@media (max-height: 520px) and (max-width: 900px) {
+    .team-panel {
+        bottom: 42px !important;
+    }
+    #topPanel { max-height: 42vh; }
+    #status { font-size: 9px; padding: 4px 6px; }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="topPanel" class="panel">
+    <h1>🌍 Living World</h1>
+
+    <select id="languageSelect">
+        <option value="en">🇬🇧 English</option>
+        <option value="ru">🇷🇺 Русский</option>
+        <option value="hy">🇦🇲 Հայերեն</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+        <option value="ar">🇸🇦 العربية</option>
+    </select>
+
+    <div class="team"><span id="roundText">🏁 Round:</span> <span id="roundLabel">1 / 3</span></div>
+    <div class="team"><span id="lossesText">⚔️ Losses:</span> <span id="losses">0</span></div>
+    <div class="team"><span id="timeText">⏱️ Time:</span> <span id="clock">00:00</span></div>
+</div>
+<div id="actions">
+    <button id="battleButton">⚔️ Start Battle</button>
+    <button id="pauseButton">⏸️ Pause</button>
+    <button id="resetButton">🔄 New Game</button>
+</div>
+
+<div id="countdownBanner">
+    <div class="cd-title" id="cdTitle">⏳ Countdown 1 / 3</div>
+    <div class="cd-timer" id="cdTimer">20 sec</div>
+    <div class="cd-sub" id="cdSub">Add troops — the battle will resume automatically</div>
+</div>
+
+<div id="status">
+    The world is loading. Drag the mouse to rotate the camera, scroll to zoom.
+</div>
+
+<div id="victoryModal">
+    <div class="victory-card">
+        <h2 id="victoryTitle">🏆 Victory!</h2>
+        <p id="victoryDetails">The enemy army has been destroyed.</p>
+        <button id="playAgainButton">🔄 New Game</button>
+    </div>
+</div>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+// ==========================================
+// УЛУЧШЕННАЯ ЗВУКОВАЯ СИСТЕМА (WEB AUDIO API)
+// Все звуки создаются внутри игры, отдельные аудиофайлы не нужны.
+// ==========================================
+
+class SynthSoundManager {
+    constructor() {
+        this.ctx = null;
+        this.master = null;
+        this.lastPlayed = {};
+        this.cooldowns = {
+            shot: 95,
+            explosion: 180,
+            tank: 650,
+            artillery: 900,
+            vehicle: 500,
+            tesla: 180
+        };
+    }
+
+    unlock() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+
+            this.ctx = new AudioCtx();
+            this.master = this.ctx.createGain();
+            this.master.gain.value = 0.72;
+
+            const compressor = this.ctx.createDynamicsCompressor();
+            compressor.threshold.value = -18;
+            compressor.knee.value = 18;
+            compressor.ratio.value = 4;
+            compressor.attack.value = 0.004;
+            compressor.release.value = 0.22;
+
+            this.master.connect(compressor);
+            compressor.connect(this.ctx.destination);
+        }
+
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+        }
+    }
+
+    noiseBuffer(duration) {
+        const length = Math.max(1, Math.floor(this.ctx.sampleRate * duration));
+        const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < length; i++) {
+            // Небольшое затухание шума к концу буфера
+            const fade = 1 - i / length;
+            data[i] = (Math.random() * 2 - 1) * fade;
+        }
+        return buffer;
+    }
+
+    noise(duration, frequency, endFrequency, volume, filterType = 'lowpass', q = 0.8, delay = 0) {
+        const t = this.ctx.currentTime + delay;
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.noiseBuffer(duration);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = filterType;
+        filter.frequency.setValueAtTime(Math.max(20, frequency), t);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), t + duration);
+        filter.Q.value = q;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(volume, t + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.master);
+
+        source.start(t);
+        source.stop(t + duration + 0.02);
+    }
+
+    tone(startHz, endHz, duration, volume, wave = 'sine', delay = 0) {
+        const t = this.ctx.currentTime + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = wave;
+        osc.frequency.setValueAtTime(Math.max(1, startHz), t);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, endHz), t + duration);
+
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(volume, t + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+        osc.connect(gain);
+        gain.connect(this.master);
+        osc.start(t);
+        osc.stop(t + duration + 0.02);
+    }
+
+    play(type) {
+        this.unlock();
+        if (!this.ctx || this.ctx.state !== 'running') return;
+
+        const now = performance.now();
+        const cooldown = this.cooldowns[type] ?? 150;
+        if (now - (this.lastPlayed[type] || 0) < cooldown) return;
+        this.lastPlayed[type] = now;
+
+        if (type === 'shot') this.playShot();
+        else if (type === 'explosion') this.playExplosion();
+        else if (type === 'tank') this.playTank();
+        else if (type === 'artillery') this.playArtillery();
+        else if (type === 'vehicle') this.playVehicle();
+        else if (type === 'tesla') this.playTesla();
+    }
+
+    // Короткий резкий выстрел с щелчком и низким ударом
+    playShot() {
+        const pitch = 0.9 + Math.random() * 0.22;
+        this.noise(0.12, 2600 * pitch, 500, 0.20, 'bandpass', 0.9);
+        this.noise(0.075, 500, 90, 0.16, 'lowpass', 0.7);
+        this.tone(105, 48, 0.095, 0.12, 'triangle');
+    }
+
+    // Глубокий взрыв с ударом, треском и длинным хвостом
+    playExplosion() {
+        const pitch = 0.9 + Math.random() * 0.2;
+        this.noise(0.95, 520 * pitch, 42, 0.38, 'lowpass', 0.65);
+        this.noise(0.34, 1800, 180, 0.16, 'lowpass', 0.5, 0.012);
+        this.tone(82, 27, 0.72, 0.28, 'sine');
+        this.noise(0.55, 260, 70, 0.10, 'lowpass', 0.7, 0.16);
+    }
+
+    // Тяжёлый танковый выстрел
+    playTank() {
+        this.noise(0.34, 850, 90, 0.34, 'lowpass', 0.65);
+        this.noise(0.11, 1900, 420, 0.20, 'bandpass', 0.8);
+        this.tone(105, 34, 0.42, 0.28, 'sine');
+        this.noise(0.42, 180, 55, 0.12, 'lowpass', 0.7, 0.08);
+    }
+
+    // Артиллерийский залп: низкий выстрел и раскат
+    playArtillery() {
+        this.tone(72, 25, 0.8, 0.34, 'sine');
+        this.noise(0.65, 420, 38, 0.40, 'lowpass', 0.55);
+        this.noise(0.22, 1250, 160, 0.19, 'lowpass', 0.7, 0.025);
+        this.noise(0.75, 210, 45, 0.13, 'lowpass', 0.6, 0.18);
+    }
+
+    // Короткий запуск двигателя техники
+    playVehicle() {
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(68 + Math.random() * 18, t);
+        osc.frequency.exponentialRampToValueAtTime(125 + Math.random() * 20, t + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(58, t + 0.52);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(230, t);
+
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(0.13, t + 0.035);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.master);
+        osc.start(t);
+        osc.stop(t + 0.58);
+
+        this.noise(0.24, 260, 75, 0.08, 'lowpass', 0.7, 0.02);
+    }
+
+    // Электрический импульс Tesla
+    playTesla() {
+        this.noise(0.16, 3200, 500, 0.12, 'bandpass', 2);
+        this.tone(520, 95, 0.22, 0.10, 'sawtooth');
+        this.tone(90, 180, 0.16, 0.07, 'sine');
+    }
+}
+
+const sfx = new SynthSoundManager();
+
+// Первый клик/касание разрешает браузеру воспроизводить звук
+window.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
+window.addEventListener('keydown', () => sfx.unlock(), { once: true });
+
+// ==========================================
+// ПЕРЕВОД ИГРЫ НА 7 ЯЗЫКОВ
+// ==========================================
+
+const translations = {
+
+    en: {
+        title: "🌍 Living World",
+        round: "🏁 Round:",
+        losses: "⚔️ Losses:",
+        time: "⏱️ Time:",
+        start: "⚔️ Start Battle",
+        pause: "⏸️ Pause",
+        resume: "▶️ Resume",
+        newGame: "🔄 New Game",
+        countdown: "⏳ Countdown",
+        seconds: "sec",
+        countdownText: "Add troops — the battle will resume automatically",
+        loading: "The world is loading. Drag the mouse to rotate the camera, scroll to zoom.",
+        victory: "🏆 Victory!",
+        enemyDestroyed: "The enemy army has been destroyed.",
+        ready: "✅ World loaded! Press Start Battle.",
+        maxUnits: "⛔ Maximum 12 army units!",
+        allSlots: "⛔ All 12 positions are occupied!",
+        blueWinner: "Blue Army",
+        redWinner: "Red Army",
+        winner: "🏆 Winner:",
+        totalLosses: "Total losses:"
+    },
+
+    ru: {
+        title: "🌍 Живой мир",
+        round: "🏁 Раунд:",
+        losses: "⚔️ Потери:",
+        time: "⏱️ Время:",
+        start: "⚔️ Начать битву",
+        pause: "⏸️ Пауза",
+        resume: "▶️ Продолжить",
+        newGame: "🔄 Новая игра",
+        countdown: "⏳ Отсчёт",
+        seconds: "сек",
+        countdownText: "Добавляй войска — бой продолжится автоматически",
+        loading: "Мир загружается. Перетаскивай мышью для вращения камеры, колёсико — масштаб.",
+        victory: "🏆 Победа!",
+        enemyDestroyed: "Армия противника уничтожена.",
+        ready: "✅ Мир загружен! Нажми «Начать битву».",
+        maxUnits: "⛔ Максимум 12 единиц армии!",
+        allSlots: "⛔ Все 12 мест заняты!",
+        blueWinner: "Синяя армия",
+        redWinner: "Красная армия",
+        winner: "🏆 Победитель:",
+        totalLosses: "Общие потери:"
+    },
+
+    hy: {
+        title: "🌍 Կենդանի աշխարհ",
+        round: "🏁 Փուլ:",
+        losses: "⚔️ Կորուստներ:",
+        time: "⏱️ Ժամանակ:",
+        start: "⚔️ Սկսել մարտը",
+        pause: "⏸️ Դադար",
+        resume: "▶️ Շարունակել",
+        newGame: "🔄 Նոր խաղ",
+        countdown: "⏳ Հետհաշվարկ",
+        seconds: "վրկ",
+        countdownText: "Ավելացրու զորքեր․ մարտը կշարունակվի ինքնաբերաբար",
+        loading: "Աշխարհը բեռնվում է։ Քաշիր մկնիկով՝ տեսախցիկը պտտելու համար։",
+        victory: "🏆 Հաղթանակ!",
+        enemyDestroyed: "Հակառակորդի բանակը ոչնչացվել է։",
+        ready: "✅ Աշխարհը պատրաստ է։ Սեղմիր «Սկսել մարտը»։",
+        maxUnits: "⛔ Բանակի առավելագույնը 12 միավոր է։",
+        allSlots: "⛔ Բոլոր 12 տեղերը զբաղված են։",
+        blueWinner: "Կապույտ բանակ",
+        redWinner: "Կարմիր բանակ",
+        winner: "🏆 Հաղթող:",
+        totalLosses: "Ընդհանուր կորուստներ:"
+    },
+
+    fr: {
+        title: "🌍 Monde Vivant",
+        round: "🏁 Manche :",
+        losses: "⚔️ Pertes :",
+        time: "⏱️ Temps :",
+        start: "⚔️ Commencer la bataille",
+        pause: "⏸️ Pause",
+        resume: "▶️ Reprendre",
+        newGame: "🔄 Nouvelle partie",
+        countdown: "⏳ Compte à rebours",
+        seconds: "sec",
+        countdownText: "Ajoutez des troupes — la bataille reprendra automatiquement",
+        loading: "Le monde se charge. Faites glisser la souris pour tourner la caméra.",
+        victory: "🏆 Victoire !",
+        enemyDestroyed: "L'armée ennemie a été détruite.",
+        ready: "✅ Monde chargé ! Appuyez sur Commencer la bataille.",
+        maxUnits: "⛔ Maximum 12 unités militaires !",
+        allSlots: "⛔ Les 12 positions sont occupées !",
+        blueWinner: "Armée bleue",
+        redWinner: "Armée rouge",
+        winner: "🏆 Gagnant :",
+        totalLosses: "Pertes totales :"
+    },
+
+    de: {
+        title: "🌍 Lebendige Welt",
+        round: "🏁 Runde:",
+        losses: "⚔️ Verluste:",
+        time: "⏱️ Zeit:",
+        start: "⚔️ Kampf starten",
+        pause: "⏸️ Pause",
+        resume: "▶️ Fortsetzen",
+        newGame: "🔄 Neues Spiel",
+        countdown: "⏳ Countdown",
+        seconds: "Sek.",
+        countdownText: "Truppen hinzufügen — der Kampf wird automatisch fortgesetzt",
+        loading: "Die Welt wird geladen. Ziehe die Maus, um die Kamera zu drehen.",
+        victory: "🏆 Sieg!",
+        enemyDestroyed: "Die feindliche Armee wurde zerstört.",
+        ready: "✅ Welt geladen! Drücke Kampf starten.",
+        maxUnits: "⛔ Maximal 12 Armeeeinheiten!",
+        allSlots: "⛔ Alle 12 Plätze sind belegt!",
+        blueWinner: "Blaue Armee",
+        redWinner: "Rote Armee",
+        winner: "🏆 Gewinner:",
+        totalLosses: "Gesamtverluste:"
+    },
+
+    "pt-BR": {
+        title: "🌍 Mundo Vivo",
+        round: "🏁 Rodada:",
+        losses: "⚔️ Perdas:",
+        time: "⏱️ Tempo:",
+        start: "⚔️ Iniciar batalha",
+        pause: "⏸️ Pausar",
+        resume: "▶️ Continuar",
+        newGame: "🔄 Novo jogo",
+        countdown: "⏳ Contagem regressiva",
+        seconds: "seg",
+        countdownText: "Adicione tropas — a batalha continuará automaticamente",
+        loading: "O mundo está carregando. Arraste o mouse para girar a câmera.",
+        victory: "🏆 Vitória!",
+        enemyDestroyed: "O exército inimigo foi destruído.",
+        ready: "✅ Mundo carregado! Pressione Iniciar batalha.",
+        maxUnits: "⛔ Máximo de 12 unidades do exército!",
+        allSlots: "⛔ Todas as 12 posições estão ocupadas!",
+        blueWinner: "Exército azul",
+        redWinner: "Exército vermelho",
+        winner: "🏆 Vencedor:",
+        totalLosses: "Perdas totais:"
+    },
+
+    ar: {
+        title: "🌍 العالم الحي",
+        round: "🏁 الجولة:",
+        losses: "⚔️ الخسائر:",
+        time: "⏱️ الوقت:",
+        start: "⚔️ ابدأ المعركة",
+        pause: "⏸️ إيقاف مؤقت",
+        resume: "▶️ متابعة",
+        newGame: "🔄 لعبة جديدة",
+        countdown: "⏳ العد التنازلي",
+        seconds: "ث",
+        countdownText: "أضف قوات — ستستأنف المعركة تلقائيًا",
+        loading: "العالم قيد التحميل. اسحب بالماوس لتدوير الكاميرا.",
+        victory: "🏆 انتصار!",
+        enemyDestroyed: "تم تدمير جيش العدو.",
+        ready: "✅ العالم جاهز! اضغط ابدأ المعركة.",
+        maxUnits: "⛔ الحد الأقصى 12 وحدة عسكرية!",
+        allSlots: "⛔ جميع المواقع الـ12 مشغولة!",
+        blueWinner: "الجيش الأزرق",
+        redWinner: "الجيش الأحمر",
+        winner: "🏆 الفائز:",
+        totalLosses: "إجمالي الخسائر:"
+    }
+};
+
+// ==========================================
+// УСТАНОВКА ВЫБРАННОГО ЯЗЫКА
+// ==========================================
+
+let currentLanguage = localStorage.getItem("gameLanguage") || "en";
+
+function applyLanguage() {
+
+    const t = translations[currentLanguage];
+
+    document.documentElement.lang = currentLanguage;
+    document.documentElement.dir =
+        currentLanguage === "ar" ? "rtl" : "ltr";
+
+    document.getElementById("languageSelect").value = currentLanguage;
+
+    document.querySelector("#topPanel h1").textContent = t.title;
+
+    document.getElementById("roundText").textContent = t.round;
+    document.getElementById("lossesText").textContent = t.losses;
+    document.getElementById("timeText").textContent = t.time;
+
+    document.getElementById("battleButton").textContent = t.start;
+    document.getElementById("pauseButton").textContent = t.pause;
+    document.getElementById("resetButton").textContent = t.newGame;
+
+    document.getElementById("playAgainButton").textContent = t.newGame;
+
+    document.getElementById("cdTitle").textContent =
+        t.countdown + " 1 / 3";
+
+    document.getElementById("cdTimer").textContent =
+        "20 " + t.seconds;
+
+    document.getElementById("cdSub").textContent = t.countdownText;
+
+    document.getElementById("status").textContent = t.loading;
+
+    document.getElementById("victoryTitle").textContent = t.victory;
+    document.getElementById("victoryDetails").textContent = t.enemyDestroyed;
+}
+
+// ==========================================
+// ПЕРЕКЛЮЧЕНИЕ ЯЗЫКА
+// ==========================================
+
+document.getElementById("languageSelect").addEventListener("change", function() {
+
+    currentLanguage = this.value;
+
+    localStorage.setItem("gameLanguage", currentLanguage);
+
+    applyLanguage();
+
+});
+
+applyLanguage();
+
+// ==================================================
+// 1. ОСНОВНЫЕ ПЕРЕМЕННЫЕ
+// ==================================================
+
+const MAX_ARMY_UNITS = 12;
+const MAX_COUNTDOWNS = 3;
+const REINFORCEMENT_SECONDS = 20;
+
+// Ручные границы дороги и баз (без пересечения травы)
+const ROAD_Z_MIN = 29;
+const ROAD_Z_MAX = 61;
+const ROAD_X_HALF = 38;
+const ROAD_SURFACE_Y = 0.25;
+
+let battleActive = false;
+let paused = false;
+let roundFinished = false;
+let elapsedTime = 0;
+let totalLosses = 0;
+
+let countdownStep = 0;
+let reinforcementActive = false;
+let reinforcementTimer = 0;
+let wipedTeamWaiting = null;
+
+const soldiers = [];
+const gates = [];
+const searchBeams = [];
+const bullets = [];
+const explosions = [];
+const debris = [];
+const tankEffects = [];
+const artilleryEffects = [];
+const tanks = [];
+const vehicles = [];
+const flyingTeslas = [];
+const artillery = [];
+
+const spawnSlots = {
+    blue: Array(MAX_ARMY_UNITS).fill(false),
+    red: Array(MAX_ARMY_UNITS).fill(false)
+};
+
+const armyUnits = {
+    blue: [],
+    red: []
+};
+
+const destroyedPositions = {
+    blue: [],
+    red: []
+};
+
+// ==================================================
+// 2. 3D-МИР, НЕБО, СВЕТ И ТОНМАППИНГ
+// ==================================================
+
+const canvas = document.getElementById('game');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9bc4e2);
+scene.fog = new THREE.FogExp2(0x9fc5e0, 0.0052);
+
+const camera = new THREE.PerspectiveCamera(
+    52,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    600
+);
+
+const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    powerPreference: 'high-performance'
+});
+// Качество подбирается по устройству: максимум на ПК, разумная нагрузка на телефоне.
+const isMobileDevice = window.matchMedia('(max-width: 700px)').matches ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const maxRenderPixelRatio = isMobileDevice ? 1.6 : 2.25;
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRenderPixelRatio));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+renderer.info.autoReset = true;
+
+function createSkyDome() {
+    const skyCanvas = document.createElement('canvas');
+    skyCanvas.width = 32;
+    skyCanvas.height = 256;
+    const ctx = skyCanvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0.0, '#3e78b2');
+    grad.addColorStop(0.45, '#7cb1dc');
+    grad.addColorStop(0.82, '#c5dfef');
+    grad.addColorStop(1.0, '#dceaf2');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 32, 256);
+
+    const tex = new THREE.CanvasTexture(skyCanvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+
+    const skyGeo = new THREE.SphereGeometry(420, 32, 24);
+    const skyMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false });
+    scene.add(new THREE.Mesh(skyGeo, skyMat));
+}
+createSkyDome();
+
+const sunlight = new THREE.DirectionalLight(0xfff1d6, 3.2);
+sunlight.position.set(-38, 52, 28);
+sunlight.castShadow = true;
+// Более чёткие тени на ПК; на телефоне оставляем облегчённый режим.
+const shadowResolution = isMobileDevice ? 2048 : 4096;
+sunlight.shadow.mapSize.set(shadowResolution, shadowResolution);
+sunlight.shadow.camera.near = 5;
+sunlight.shadow.camera.far = 180;
+sunlight.shadow.camera.left = -75;
+sunlight.shadow.camera.right = 75;
+sunlight.shadow.camera.top = 75;
+sunlight.shadow.camera.bottom = -75;
+sunlight.shadow.bias = -0.0004;
+sunlight.shadow.normalBias = 0.025;
+scene.add(sunlight);
+
+const ambientLight = new THREE.HemisphereLight(0xbfe0ff, 0x435636, 1.55);
+scene.add(ambientLight);
+
+const rimLight = new THREE.DirectionalLight(0x8ec5ff, 0.85);
+rimLight.position.set(35, 22, -35);
+scene.add(rimLight);
+
+// ==================================================
+// 3. ПРОЦЕДУРНЫЕ PBR-ТЕКСТУРЫ И РУЧНОЙ ВЫРЕЗ ПОД БАЗЫ И ДОРОГУ
+// ==================================================
+
+function makeNoiseCanvas(size, baseRgb, varRange, speckCount, speckRgb) {
+    const c = document.createElement('canvas');
+    c.width = size;
+    c.height = size;
+    const ctx = c.getContext('2d');
+    const img = ctx.createImageData(size, size);
+    const d = img.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+        const delta = (Math.random() - 0.5) * varRange;
+        d[i] = Math.max(0, Math.min(255, baseRgb[0] + delta));
+        d[i + 1] = Math.max(0, Math.min(255, baseRgb[1] + delta));
+        d[i + 2] = Math.max(0, Math.min(255, baseRgb[2] + delta));
+        d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+
+    for (let i = 0; i < speckCount; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const r = 0.6 + Math.random() * 1.8;
+        ctx.fillStyle = speckRgb;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    return c;
+}
+
+function createPBRTextureSet(repeatX, repeatY, baseRgb, varRange, speckCount, speckRgb, bumpScale = 0.08) {
+    const colorCanvas = makeNoiseCanvas(256, baseRgb, varRange, speckCount, speckRgb);
+    const bumpCanvas = makeNoiseCanvas(256, [128, 128, 128], 95, Math.floor(speckCount * 0.6), 'rgba(220,220,220,0.28)');
+
+    const map = new THREE.CanvasTexture(colorCanvas);
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(repeatX, repeatY);
+
+    const bumpMap = new THREE.CanvasTexture(bumpCanvas);
+    bumpMap.wrapS = bumpMap.wrapT = THREE.RepeatWrapping;
+    bumpMap.repeat.set(repeatX, repeatY);
+
+    return { map, bumpMap, bumpScale };
+}
+
+const grassTex = createPBRTextureSet(28, 28, [92, 126, 62], 24, 900, 'rgba(42, 68, 25, 0.35)', 0.14);
+const asphaltTex = createPBRTextureSet(16, 6, [44, 48, 53], 18, 1200, 'rgba(18, 20, 23, 0.45)', 0.12);
+const concreteTex = createPBRTextureSet(4, 4, [122, 128, 134], 20, 450, 'rgba(55, 60, 65, 0.25)', 0.09);
+const metalTex = createPBRTextureSet(2, 2, [86, 94, 102], 22, 300, 'rgba(215, 225, 235, 0.16)', 0.07);
+
+// Улучшаем чёткость текстур под углом (дорога, земля и платформы).
+const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+for (const textureSet of [grassTex, asphaltTex, concreteTex, metalTex]) {
+    textureSet.map.anisotropy = maxAnisotropy;
+    textureSet.bumpMap.anisotropy = maxAnisotropy;
+    textureSet.map.needsUpdate = true;
+    textureSet.bumpMap.needsUpdate = true;
+}
+
+const materials = {
+    grass: new THREE.MeshStandardMaterial({
+        map: grassTex.map,
+        bumpMap: grassTex.bumpMap,
+        bumpScale: grassTex.bumpScale,
+        roughness: 0.92,
+        metalness: 0.02
+    }),
+    asphalt: new THREE.MeshStandardMaterial({
+        map: asphaltTex.map,
+        bumpMap: asphaltTex.bumpMap,
+        bumpScale: asphaltTex.bumpScale,
+        roughness: 0.88,
+        metalness: 0.06
+    }),
+    concrete: new THREE.MeshStandardMaterial({
+        map: concreteTex.map,
+        bumpMap: concreteTex.bumpMap,
+        bumpScale: concreteTex.bumpScale,
+        roughness: 0.86,
+        metalness: 0.05
+    }),
+    metal: new THREE.MeshStandardMaterial({
+        map: metalTex.map,
+        bumpMap: metalTex.bumpMap,
+        bumpScale: metalTex.bumpScale,
+        roughness: 0.42,
+        metalness: 0.72
+    }),
+    stone: new THREE.MeshStandardMaterial({
+        map: concreteTex.map,
+        bumpMap: concreteTex.bumpMap,
+        bumpScale: 0.16,
+        color: 0x8a8e91,
+        roughness: 0.9,
+        metalness: 0.05
+    }),
+    wood: new THREE.MeshStandardMaterial({
+        color: 0x5c3c24,
+        bumpMap: asphaltTex.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.92
+    }),
+    blue: new THREE.MeshStandardMaterial({
+        map: metalTex.map,
+        bumpMap: metalTex.bumpMap,
+        bumpScale: 0.05,
+        color: 0x1c78f2,
+        roughness: 0.48,
+        metalness: 0.35
+    }),
+    red: new THREE.MeshStandardMaterial({
+        map: metalTex.map,
+        bumpMap: metalTex.bumpMap,
+        bumpScale: 0.05,
+        color: 0xd13238,
+        roughness: 0.48,
+        metalness: 0.35
+    }),
+    leaves: new THREE.MeshStandardMaterial({
+        color: 0x265e30,
+        roughness: 0.85,
+        metalness: 0.02
+    }),
+    lightLeaves: new THREE.MeshStandardMaterial({
+        color: 0x458038,
+        roughness: 0.82,
+        metalness: 0.02
+    })
+};
+
+function isOnRoad(x, z) {
+    return Math.abs(x) <= ROAD_X_HALF + 1.5 && z >= ROAD_Z_MIN - 1.5 && z <= ROAD_Z_MAX + 1.5;
+}
+
+function isUnderBasePlatform(x, z) {
+    const inBlue = x >= -44 && x <= -6 && z >= -22.5 && z <= 29.5;
+    const inRed = x >= 6 && x <= 44 && z >= -22.5 && z <= 29.5;
+    return inBlue || inRed;
+}
+
+function getGroundHeight(x, z) {
+    return -0.6;
+}
+
+function getEntitySupportY(x, z) {
+    if (Math.abs(x) <= ROAD_X_HALF && z >= ROAD_Z_MIN && z <= ROAD_Z_MAX) {
+        return ROAD_SURFACE_Y;
+    }
+    return getGroundHeight(x, z);
+}
+
+const groundGeometry = new THREE.PlaneGeometry(220, 220, 220, 220);
+const posAttr = groundGeometry.attributes.position;
+for (let i = 0; i < posAttr.count; i++) {
+    const x = posAttr.getX(i);
+    const z = posAttr.getY(i);
+    posAttr.setZ(i, getGroundHeight(x, z));
+}
+groundGeometry.computeVertexNormals();
+
+const ground = new THREE.Mesh(groundGeometry, materials.grass);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+function createBattleRoad() {
+    const lineMaterial = new THREE.MeshStandardMaterial({ color: 0xebe6cf, roughness: 0.75 });
+    const curbMaterial = new THREE.MeshStandardMaterial({ color: 0x8f959a, roughness: 0.9 });
+
+    const roadWidth = ROAD_X_HALF * 2;
+    const roadDepth = ROAD_Z_MAX - ROAD_Z_MIN;
+    const roadCenterZ = (ROAD_Z_MIN + ROAD_Z_MAX) / 2;
+
+    const road = new THREE.Mesh(new THREE.BoxGeometry(roadWidth, 0.24, roadDepth), materials.asphalt);
+    road.position.set(0, ROAD_SURFACE_Y - 0.12, roadCenterZ);
+    road.receiveShadow = true;
+    scene.add(road);
+
+    for (const zEdge of [ROAD_Z_MIN + 0.22, ROAD_Z_MAX - 0.22]) {
+        const curb = new THREE.Mesh(new THREE.BoxGeometry(roadWidth, 0.16, 0.45), curbMaterial);
+        curb.position.set(0, ROAD_SURFACE_Y + 0.04, zEdge);
+        curb.castShadow = true;
+        curb.receiveShadow = true;
+        scene.add(curb);
+    }
+
+    for (let x = -ROAD_X_HALF + 4; x <= ROAD_X_HALF - 4; x += 8) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.04, 0.18), lineMaterial);
+        stripe.position.set(x, ROAD_SURFACE_Y + 0.02, roadCenterZ);
+        stripe.receiveShadow = true;
+        scene.add(stripe);
+    }
+}
+createBattleRoad();
+
+// ==================================================
+// 4. ОКРУЖЕНИЕ (ДЕРЕВЬЯ И КАМНИ)
+// ==================================================
+
+function isBlockedArea(x, z) {
+    const inBlueBase = Math.abs(x + 25) < 23 && z > -24 && z < 30;
+    const inRedBase = Math.abs(x - 25) < 23 && z > -24 && z < 30;
+    const nearRoad = Math.abs(x) <= ROAD_X_HALF + 3 && z >= ROAD_Z_MIN - 3 && z <= ROAD_Z_MAX + 3;
+    return inBlueBase || inRedBase || nearRoad;
+}
+
+function createTree(x, z, scale = 1) {
+    const tree = new THREE.Group();
+
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 1.8, 8), materials.wood);
+    trunk.position.y = 0.9;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    tree.add(trunk);
+
+    const leaves1 = new THREE.Mesh(new THREE.ConeGeometry(1.18, 2.7, 9), materials.leaves);
+    leaves1.position.y = 2.5;
+    leaves1.castShadow = true;
+    leaves1.receiveShadow = true;
+    tree.add(leaves1);
+
+    const leaves2 = new THREE.Mesh(new THREE.ConeGeometry(0.82, 2.1, 9), materials.lightLeaves);
+    leaves2.position.y = 3.3;
+    leaves2.castShadow = true;
+    leaves2.receiveShadow = true;
+    tree.add(leaves2);
+
+    tree.position.set(x, getEntitySupportY(x, z), z);
+    tree.scale.setScalar(scale);
+    tree.rotation.y = Math.random() * Math.PI * 2;
+    scene.add(tree);
+}
+
+for (let i = 0; i < 90; i++) {
+    const x = Math.random() * 180 - 90;
+    const z = Math.random() * 180 - 90;
+    if (!isBlockedArea(x, z)) createTree(x, z, 0.72 + Math.random() * 0.72);
+}
+
+function createRock(x, z, scale) {
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 1), materials.stone);
+    rock.position.set(x, getEntitySupportY(x, z) + 0.3 * scale, z);
+    rock.scale.set(scale * 1.2, scale * 0.65, scale);
+    rock.rotation.set(Math.random(), Math.random(), Math.random());
+    rock.castShadow = true;
+    rock.receiveShadow = true;
+    scene.add(rock);
+}
+
+for (let i = 0; i < 38; i++) {
+    const x = Math.random() * 180 - 90;
+    const z = Math.random() * 180 - 90;
+    if (!isBlockedArea(x, z)) createRock(x, z, 0.3 + Math.random() * 0.7);
+}
+
+// ==================================================
+// 5. КРЕПОСТИ И ТЕХНИКА
+// ==================================================
+
+function createFortress(centerX, centerZ, teamMaterial) {
+    const base = new THREE.Group();
+    const darkConcrete = new THREE.MeshStandardMaterial({
+        map: concreteTex.map,
+        bumpMap: concreteTex.bumpMap,
+        bumpScale: 0.09,
+        color: 0x4a5258,
+        roughness: 0.88
+    });
+    const glass = new THREE.MeshStandardMaterial({
+        color: 0x6ec6e6,
+        metalness: 0.35,
+        roughness: 0.14
+    });
+    const groundMaterial = new THREE.MeshStandardMaterial({
+        map: concreteTex.map,
+        bumpMap: concreteTex.bumpMap,
+        bumpScale: 0.08,
+        color: 0x8f9580,
+        roughness: 0.94
+    });
+
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(36, 0.5, 50), groundMaterial);
+    platform.position.set(0, 0.25, 3.5);
+    platform.receiveShadow = true;
+    platform.castShadow = true;
+    base.add(platform);
+
+    const road = new THREE.Mesh(new THREE.BoxGeometry(34, 0.25, 1.5), darkConcrete);
+    road.position.set(0, 0.52, 0);
+    road.receiveShadow = true;
+    base.add(road);
+
+    const hangar = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 8), materials.concrete);
+    hangar.position.set(-6, 3.0, -6);
+    hangar.castShadow = true;
+    hangar.receiveShadow = true;
+    base.add(hangar);
+
+    const hangarRoof = new THREE.Mesh(new THREE.BoxGeometry(10.6, 0.45, 8.6), materials.metal);
+    hangarRoof.position.set(-6, 5.7, -6);
+    hangarRoof.castShadow = true;
+    base.add(hangarRoof);
+
+    const hangarDoor = new THREE.Mesh(new THREE.BoxGeometry(5, 3.5, 0.15), materials.metal);
+    hangarDoor.position.set(-6, 2.3, -1.9);
+    hangarDoor.castShadow = true;
+    base.add(hangarDoor);
+
+    const barracks = new THREE.Mesh(new THREE.BoxGeometry(8, 3.5, 6), materials.concrete);
+    barracks.position.set(7, 2.25, -8);
+    barracks.castShadow = true;
+    barracks.receiveShadow = true;
+    base.add(barracks);
+
+    const barracksRoof = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.4, 6.5), materials.metal);
+    barracksRoof.position.set(7, 4.2, -8);
+    barracksRoof.castShadow = true;
+    base.add(barracksRoof);
+
+    for (let i = 0; i < 4; i++) {
+        const win = new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 0.12), glass);
+        win.position.set(4.2 + i * 1.8, 2.8, -4.94);
+        base.add(win);
+    }
+
+    const towerPositions = [[-12, -12], [12, -12], [-12, 12], [12, 12]];
+    for (const [x, z] of towerPositions) {
+        const support = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4, 1.2), materials.metal);
+        support.position.set(x, 2.5, z);
+        support.castShadow = true;
+        support.receiveShadow = true;
+        base.add(support);
+
+        const platformTop = new THREE.Mesh(new THREE.BoxGeometry(3, 0.4, 3), darkConcrete);
+        platformTop.position.set(x, 4.7, z);
+        platformTop.castShadow = true;
+        base.add(platformTop);
+
+        const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.5, 2.2), materials.concrete);
+        cabin.position.set(x, 5.65, z);
+        cabin.castShadow = true;
+        base.add(cabin);
+
+        const towerRoof = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.25, 2.6), teamMaterial);
+        towerRoof.position.set(x, 6.55, z);
+        towerRoof.castShadow = true;
+        base.add(towerRoof);
+
+        const searchLight = new THREE.Group();
+        searchLight.position.set(x, 7.0, z);
+        base.add(searchLight);
+
+        const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 0.7), materials.metal);
+        lamp.position.set(0, 0, 0.5);
+        searchLight.add(lamp);
+
+        const lampGlass = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 0.3, 0.08),
+            new THREE.MeshBasicMaterial({ color: 0xffffbb })
+        );
+        lampGlass.position.set(0, 0, 0.87);
+        searchLight.add(lampGlass);
+
+        const lampLight = new THREE.PointLight(0xfff2b2, 18, 28);
+        lampLight.position.set(0, 0, 1);
+        searchLight.add(lampLight);
+
+        searchBeams.push(searchLight);
+    }
+
+    const fenceMat = new THREE.MeshStandardMaterial({
+        map: metalTex.map,
+        color: 0x5d6864,
+        metalness: 0.45,
+        roughness: 0.72
+    });
+    const backFence = new THREE.Mesh(new THREE.BoxGeometry(28, 1.5, 0.25), fenceMat);
+    backFence.position.set(0, 1.25, -17);
+    backFence.castShadow = true;
+    base.add(backFence);
+
+    const leftFence = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.5, 42), fenceMat);
+    leftFence.position.set(-17, 1.25, 3.5);
+    leftFence.castShadow = true;
+    base.add(leftFence);
+
+    const rightFence = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.5, 42), fenceMat);
+    rightFence.position.set(17, 1.25, 3.5);
+    rightFence.castShadow = true;
+    base.add(rightFence);
+
+    for (const x of [-12, 12]) {
+        const fencePart = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 0.25), fenceMat);
+        fencePart.position.set(x, 1.25, 24);
+        fencePart.castShadow = true;
+        base.add(fencePart);
+    }
+
+    const gateGroup = new THREE.Group();
+    const leftGate = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.8, 0.3), teamMaterial);
+    leftGate.position.set(-1.75, 1.5, 0);
+    leftGate.castShadow = true;
+    gateGroup.add(leftGate);
+
+    const rightGate = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.8, 0.3), teamMaterial);
+    rightGate.position.set(1.75, 1.5, 0);
+    rightGate.castShadow = true;
+    gateGroup.add(rightGate);
+
+    gateGroup.position.set(centerX, 0.1, centerZ + 24);
+    scene.add(gateGroup);
+
+    gateGroup.userData = {
+        leftGate,
+        rightGate,
+        team: teamMaterial === materials.blue ? 'blue' : 'red',
+        openAmount: 0
+    };
+    gates.push(gateGroup);
+
+    const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 5, 8), materials.metal);
+    flagPole.position.set(0, 7.1, -11);
+    flagPole.castShadow = true;
+    base.add(flagPole);
+
+    const flag = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 0.08), teamMaterial);
+    flag.position.set(1, 8.4, -11);
+    flag.castShadow = true;
+    base.add(flag);
+
+    base.position.set(centerX, 0, centerZ);
+    scene.add(base);
+    return base;
+}
+
+createFortress(-25, 0, materials.blue);
+createFortress(25, 0, materials.red);
+
+function createHealthBar(width, yOffset) {
+    const group = new THREE.Group();
+    const bg = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, 0.3),
+        new THREE.MeshBasicMaterial({ color: 0x1b2024, side: THREE.DoubleSide })
+    );
+    const fill = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, 0.3),
+        new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
+    );
+    fill.position.z = 0.01;
+    group.add(bg, fill);
+    group.position.set(0, yOffset, 0);
+    return { group, fill, width };
+}
+
+function createMilitaryJeep(x, z, teamMaterial) {
+    const jeep = new THREE.Group();
+    const tireMat = new THREE.MeshStandardMaterial({ color: 0x1e2022, roughness: 0.9 });
+    const winMat = new THREE.MeshStandardMaterial({ color: 0x4c768a, metalness: 0.4, roughness: 0.18 });
+    const lampMat = new THREE.MeshBasicMaterial({ color: 0xfff3be });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1, 5), teamMaterial);
+    body.position.y = 1.2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    jeep.add(body);
+
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.25, 2), teamMaterial);
+    cabin.position.set(0, 2.15, 0.5);
+    cabin.castShadow = true;
+    jeep.add(cabin);
+
+    const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.8, 0.08), winMat);
+    windshield.position.set(0, 2.25, -0.55);
+    windshield.rotation.x = -0.15;
+    jeep.add(windshield);
+
+    for (const hx of [-1.1, 1.1]) {
+        const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.28, 0.1), lampMat);
+        lamp.position.set(hx, 1.32, -2.52);
+        jeep.add(lamp);
+    }
+
+    for (const [wx, wy, wz] of [[-1.8, 0.65, -1.6], [1.8, 0.65, -1.6], [-1.8, 0.65, 1.6], [1.8, 0.65, 1.6]]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.4, 14), tireMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(wx, wy, wz);
+        wheel.castShadow = true;
+        jeep.add(wheel);
+    }
+
+    jeep.position.set(x, getEntitySupportY(x, z), z);
+    jeep.userData = { team: teamMaterial === materials.blue ? 'blue' : 'red' };
+    scene.add(jeep);
+    vehicles.push(jeep);
+    sfx.play('vehicle');
+    return jeep;
+}
+
+function createMilitaryTruck(x, z, teamMaterial) {
+    const truck = new THREE.Group();
+    const black = new THREE.MeshStandardMaterial({ color: 0x1e2022, roughness: 0.9 });
+    const glass = new THREE.MeshStandardMaterial({ color: 0x58869c, metalness: 0.4, roughness: 0.18 });
+
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.5, 7), black);
+    chassis.position.y = 1;
+    chassis.castShadow = true;
+    truck.add(chassis);
+
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 2.5), teamMaterial);
+    cabin.position.set(0, 2.1, -2);
+    cabin.castShadow = true;
+    truck.add(cabin);
+
+    const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1, 0.12), glass);
+    windshield.position.set(0, 2.35, -3.27);
+    truck.add(windshield);
+
+    const cargo = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.8, 3.8), teamMaterial);
+    cargo.position.set(0, 2, 2);
+    cargo.castShadow = true;
+    cargo.receiveShadow = true;
+    truck.add(cargo);
+
+    for (const [wx, wy, wz] of [
+        [-1.7, 0.65, -2.3], [1.7, 0.65, -2.3],
+        [-1.7, 0.65, 0], [1.7, 0.65, 0],
+        [-1.7, 0.65, 2.5], [1.7, 0.65, 2.5]
+    ]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.45, 14), black);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(wx, wy, wz);
+        wheel.castShadow = true;
+        truck.add(wheel);
+    }
+
+    truck.position.set(x, getEntitySupportY(x, z), z);
+    truck.userData = { team: teamMaterial === materials.blue ? 'blue' : 'red' };
+    scene.add(truck);
+    vehicles.push(truck);
+    sfx.play('vehicle');
+    return truck;
+}
+
+function createMilitaryTank(x, z, teamMaterial) {
+    const tank = new THREE.Group();
+    const trackMat = new THREE.MeshStandardMaterial({
+        map: asphaltTex.map,
+        bumpMap: asphaltTex.bumpMap,
+        bumpScale: 0.1,
+        color: 0x262a27,
+        roughness: 0.92
+    });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(4, 1.2, 6), teamMaterial);
+    body.position.y = 1.5;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    tank.add(body);
+
+    const upperBody = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.6, 4.8), teamMaterial);
+    upperBody.position.y = 2.3;
+    upperBody.castShadow = true;
+    tank.add(upperBody);
+
+    for (const side of [-1, 1]) {
+        const track = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 6.5), trackMat);
+        track.position.set(side * 2, 1.2, 0);
+        track.castShadow = true;
+        track.receiveShadow = true;
+        tank.add(track);
+
+        for (let i = -2; i <= 2; i++) {
+            const roadWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.18, 12), materials.metal);
+            roadWheel.rotation.z = Math.PI / 2;
+            roadWheel.position.set(side * 2.38, 1.15, i * 1.1);
+            tank.add(roadWheel);
+        }
+    }
+
+    const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.8, 12), teamMaterial);
+    turret.position.set(0, 3, 0);
+    turret.castShadow = true;
+    tank.add(turret);
+
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 4.5, 12), materials.metal);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(0, 3.1, -2.6);
+    barrel.castShadow = true;
+    tank.add(barrel);
+
+    const hpBar = createHealthBar(3, 5);
+    tank.add(hpBar.group);
+
+    tank.position.set(x, getEntitySupportY(x, z), z);
+    tank.userData = {
+        team: teamMaterial === materials.blue ? 'blue' : 'red',
+        radius: 3.1,
+        health: 1000,
+        maxHealth: 1000,
+        healthFill: hpBar.fill,
+        healthBar: hpBar.group,
+        barWidth: hpBar.width,
+        alive: true,
+        attackCooldown: 1,
+        effectCreated: false
+    };
+
+    scene.add(tank);
+    tanks.push(tank);
+    sfx.play('vehicle');
+    return tank;
+}
+
+function createArtillery(x, z, teamMaterial) {
+    const gun = new THREE.Group();
+    const team = teamMaterial === materials.blue ? 'blue' : 'red';
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x202224, roughness: 0.9 });
+
+    for (const i of [-1, 1]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.25, 12), wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(i * 1.2, 0.45, 0);
+        wheel.castShadow = true;
+        gun.add(wheel);
+    }
+
+    const base = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.5, 2), teamMaterial);
+    base.position.y = 0.9;
+    base.castShadow = true;
+    gun.add(base);
+
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 5, 12), materials.metal);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(0, 1.4, -2);
+    barrel.castShadow = true;
+    gun.add(barrel);
+
+    const hpBar = createHealthBar(3, 4);
+    gun.add(hpBar.group);
+
+    gun.position.set(x, getEntitySupportY(x, z), z);
+    gun.userData = {
+        team,
+        radius: 2.2,
+        health: 1200,
+        maxHealth: 1200,
+        healthFill: hpBar.fill,
+        healthBar: hpBar.group,
+        barWidth: hpBar.width,
+        alive: true,
+        attackCooldown: 3,
+        effectCreated: false
+    };
+
+    scene.add(gun);
+    artillery.push(gun);
+    sfx.play('vehicle');
+    return gun;
+}
+
+function createFlyingTesla(x, z, team) {
+    const tesla = new THREE.Group();
+    const silver = new THREE.MeshStandardMaterial({ color: 0xb0b7be, metalness: 0.88, roughness: 0.22 });
+    const glass = new THREE.MeshStandardMaterial({ color: 0x101820, metalness: 0.65, roughness: 0.12 });
+    const teamColor = team === 'blue' ? 0x2288ff : 0xff3333;
+    const light = new THREE.MeshStandardMaterial({
+        color: teamColor,
+        emissive: teamColor,
+        emissiveIntensity: 1.6
+    });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(5, 0.8, 2.6), silver);
+    body.castShadow = true;
+    tesla.add(body);
+
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.9, 2.3), glass);
+    cabin.position.set(-0.2, 0.8, 0);
+    tesla.add(cabin);
+
+    const front = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.45, 2.5), silver);
+    front.position.set(2.6, 0.1, 0);
+    tesla.add(front);
+
+    const frontLight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 2.4), light);
+    frontLight.position.set(3.15, 0.1, 0);
+    tesla.add(frontLight);
+
+    const hpBar = createHealthBar(4, 2.2);
+    tesla.add(hpBar.group);
+
+    tesla.position.set(x, 10, z);
+    if (team === 'red') tesla.rotation.y = Math.PI;
+    scene.add(tesla);
+
+    const entry = {
+        mesh: tesla,
+        team,
+        health: 300,
+        maxHealth: 300,
+        healthFill: hpBar.fill,
+        healthBar: hpBar.group,
+        barWidth: hpBar.width,
+        cooldown: 1,
+        baseY: 10,
+        alive: true
+    };
+    flyingTeslas.push(entry);
+    sfx.play('vehicle');
+    return entry;
+}
+
+function createSoldier(team, x, z) {
+    const soldier = new THREE.Group();
+    const uniform = team === 'blue' ? materials.blue : materials.red;
+    const skin = new THREE.MeshStandardMaterial({ color: 0xdcb188, roughness: 0.75 });
+    const armor = new THREE.MeshStandardMaterial({ color: 0x333e35, roughness: 0.72, metalness: 0.25 });
+    const dark = new THREE.MeshStandardMaterial({ color: 0x202623, roughness: 0.78 });
+
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 1.15, 10), uniform);
+    body.position.y = 1.05;
+    body.castShadow = true;
+    soldier.add(body);
+
+    const vest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.48), armor);
+    vest.position.set(0, 1.15, 0);
+    vest.castShadow = true;
+    soldier.add(vest);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 10), skin);
+    head.position.y = 1.85;
+    head.castShadow = true;
+    soldier.add(head);
+
+    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.31, 12, 8), dark);
+    helmet.position.y = 2.03;
+    helmet.castShadow = true;
+    soldier.add(helmet);
+
+    const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.65, 8), uniform);
+    leftLeg.position.set(-0.17, 0.38, 0);
+    leftLeg.castShadow = true;
+    soldier.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.65, 8), uniform);
+    rightLeg.position.set(0.17, 0.38, 0);
+    rightLeg.castShadow = true;
+    soldier.add(rightLeg);
+
+    const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.16, 1.1), materials.metal);
+    rifle.position.set(0.42, 1.3, 0.35);
+    rifle.castShadow = true;
+    soldier.add(rifle);
+
+    soldier.position.set(x, getEntitySupportY(x, z), z);
+    soldier.userData = {
+        team,
+        radius: 0.85,
+        health: 100,
+        maxHealth: 100,
+        alive: true,
+        attackCooldown: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        leftLeg,
+        rightLeg
+    };
+
+    scene.add(soldier);
+    soldiers.push(soldier);
+    return soldier;
+}
+
+// ==================================================
+// 6. РАСТАЛКИВАНИЕ ЮНИТОВ (БЕЗ ВХОЖДЕНИЯ ДРУГ В ДРУГА)
+// ==================================================
+
+function getGroundMovers() {
+    const movers = [];
+    for (const s of soldiers) if (s.userData.alive) movers.push(s);
+    for (const t of tanks) if (t.userData.alive) movers.push(t);
+    for (const a of artillery) if (a.userData.alive) movers.push(a);
+    return movers;
+}
+
+function resolveUnitCollisions(iterations = 2) {
+    const movers = getGroundMovers();
+    for (let iter = 0; iter < iterations; iter++) {
+        for (let i = 0; i < movers.length; i++) {
+            const a = movers[i];
+            const ra = a.userData.radius || 1;
+            for (let j = i + 1; j < movers.length; j++) {
+                const b = movers[j];
+                const rb = b.userData.radius || 1;
+                const minDist = ra + rb;
+
+                let dx = b.position.x - a.position.x;
+                let dz = b.position.z - a.position.z;
+                let dist = Math.hypot(dx, dz);
+
+                if (dist < minDist) {
+                    if (dist < 0.001) {
+                        const angle = (i * 1.7 + j * 0.9) % (Math.PI * 2);
+                        dx = Math.cos(angle);
+                        dz = Math.sin(angle);
+                        dist = 0.001;
+                    }
+                    const overlap = (minDist - dist) * 0.5;
+                    const nx = dx / dist;
+                    const nz = dz / dist;
+
+                    a.position.x -= nx * overlap;
+                    a.position.z -= nz * overlap;
+                    b.position.x += nx * overlap;
+                    b.position.z += nz * overlap;
+
+                    a.position.y = getEntitySupportY(a.position.x, a.position.z);
+                    b.position.y = getEntitySupportY(b.position.x, b.position.z);
+                }
+            }
+        }
+    }
+}
+
+// ==================================================
+// 7. ОТСЧЁТЫ (1 -> 2 -> 3), ДОБОР ВОЙСК И ПОБЕДА
+// ==================================================
+
+const victoryModal = document.getElementById('victoryModal');
+const victoryTitle = document.getElementById('victoryTitle');
+const victoryDetails = document.getElementById('victoryDetails');
+const countdownBanner = document.getElementById('countdownBanner');
+const cdTitle = document.getElementById('cdTitle');
+const cdTimer = document.getElementById('cdTimer');
+const cdSub = document.getElementById('cdSub');
+const roundLabel = document.getElementById('roundLabel');
+
+function updateRoundHud() {
+    const shownStep = Math.max(1, Math.min(countdownStep || 1, MAX_COUNTDOWNS));
+
+    const roundFormats = {
+        en: `${shownStep} / ${MAX_COUNTDOWNS}`,
+        ru: `${shownStep} из ${MAX_COUNTDOWNS}`,
+        hy: `${shownStep} / ${MAX_COUNTDOWNS}`,
+        fr: `${shownStep} / ${MAX_COUNTDOWNS}`,
+        de: `${shownStep} / ${MAX_COUNTDOWNS}`,
+        "pt-BR": `${shownStep} / ${MAX_COUNTDOWNS}`,
+        ar: `${shownStep} / ${MAX_COUNTDOWNS}`
+    };
+
+    roundLabel.textContent = roundFormats[currentLanguage] || roundFormats.en;
+}
+
+function hideCountdownBanner() {
+    reinforcementActive = false;
+    reinforcementTimer = 0;
+    wipedTeamWaiting = null;
+    countdownBanner.classList.remove('active');
+}
+
+function startCountdownStep(wipedTeam) {
+    countdownStep++;
+    updateRoundHud();
+
+    reinforcementActive = true;
+    reinforcementTimer = REINFORCEMENT_SECONDS;
+    wipedTeamWaiting = wipedTeam;
+
+    const messages = {
+        en: {
+            blue: "blue team",
+            red: "red team",
+            title: "army destroyed",
+            sub: "Add troops using the button below — the battle will resume automatically!",
+            status: "Add troops to continue the battle!"
+        },
+        ru: {
+            blue: "синяя команда",
+            red: "красная команда",
+            title: "армия уничтожена",
+            sub: "Добавь войска кнопкой внизу — бой продолжится автоматически!",
+            status: "Добавь войска для продолжения боя!"
+        },
+        hy: {
+            blue: "կապույտ թիմ",
+            red: "կարմիր թիմ",
+            title: "բանակը ոչնչացվել է",
+            sub: "Ավելացրու զորքեր ներքևի կոճակով — մարտը կշարունակվի ավտոմատ։",
+            status: "Ավելացրու զորքեր՝ մարտը շարունակելու համար։"
+        },
+        fr: {
+            blue: "équipe bleue",
+            red: "équipe rouge",
+            title: "armée détruite",
+            sub: "Ajoutez des troupes avec le bouton ci-dessous — le combat reprendra automatiquement !",
+            status: "Ajoutez des troupes pour continuer le combat !"
+        },
+        de: {
+            blue: "blaues Team",
+            red: "rotes Team",
+            title: "Armee zerstört",
+            sub: "Füge mit der Schaltfläche unten Truppen hinzu — der Kampf wird automatisch fortgesetzt!",
+            status: "Füge Truppen hinzu, um den Kampf fortzusetzen!"
+        },
+        "pt-BR": {
+            blue: "equipe azul",
+            red: "equipe vermelha",
+            title: "exército destruído",
+            sub: "Adicione tropas pelo botão abaixo — a batalha continuará automaticamente!",
+            status: "Adicione tropas para continuar a batalha!"
+        },
+        ar: {
+            blue: "الفريق الأزرق",
+            red: "الفريق الأحمر",
+            title: "تم تدمير الجيش",
+            sub: "أضف قوات باستخدام الزر أدناه — ستستمر المعركة تلقائيًا!",
+            status: "أضف قوات لمواصلة المعركة!"
+        }
+    };
+
+    const t = messages[currentLanguage] || messages.en;
+    const wipedName = wipedTeam === "blue" ? t.blue : t.red;
+
+    cdTitle.textContent =
+        `⏳ ${translations[currentLanguage].countdown} ${countdownStep} / ${MAX_COUNTDOWNS} — ${wipedName}: ${t.title}`;
+
+    cdTimer.textContent = `${Math.ceil(reinforcementTimer)} ${translations[currentLanguage].seconds}`;
+    cdSub.textContent = t.sub;
+
+    countdownBanner.classList.add("active");
+
+    document.getElementById("status").textContent =
+        `⏳ ${countdownStep} / ${MAX_COUNTDOWNS}: ${wipedName} — ${t.title}. ${t.status}`;
+}
+
+function resumeBattleImmediatelyAfterReinforcement(team) {
+    if (!reinforcementActive) return;
+    if (wipedTeamWaiting && team !== wipedTeamWaiting) return;
+
+    const finishedStep = countdownStep;
+    hideCountdownBanner();
+    battleActive = true;
+    paused = false;
+
+    const messages = {
+        en: {
+            blue: "Blue team",
+            red: "Red team",
+            added: "added troops!",
+            countdown: "Countdown",
+            finished: "finished — the battle continues!"
+        },
+        ru: {
+            blue: "Синяя команда",
+            red: "Красная команда",
+            added: "добавила войска!",
+            countdown: "Отсчёт",
+            finished: "завершён — бой продолжается!"
+        },
+        hy: {
+            blue: "Կապույտ թիմը",
+            red: "Կարմիր թիմը",
+            added: "զորքեր ավելացրեց։",
+            countdown: "Հետհաշվարկ",
+            finished: "ավարտվեց — մարտը շարունակվում է։"
+        },
+        fr: {
+            blue: "L'équipe bleue",
+            red: "L'équipe rouge",
+            added: "a ajouté des troupes !",
+            countdown: "Compte à rebours",
+            finished: "terminé — le combat continue !"
+        },
+        de: {
+            blue: "Das blaue Team",
+            red: "Das rote Team",
+            added: "hat Truppen hinzugefügt!",
+            countdown: "Countdown",
+            finished: "beendet — der Kampf geht weiter!"
+        },
+        "pt-BR": {
+            blue: "A equipe azul",
+            red: "A equipe vermelha",
+            added: "adicionou tropas!",
+            countdown: "Contagem regressiva",
+            finished: "terminada — a batalha continua!"
+        },
+        ar: {
+            blue: "الفريق الأزرق",
+            red: "الفريق الأحمر",
+            added: "أضاف قوات!",
+            countdown: "العد التنازلي",
+            finished: "انتهى — المعركة مستمرة!"
+        }
+    };
+
+    const t = messages[currentLanguage] || messages.en;
+    const teamName = team === "blue" ? t.blue : t.red;
+
+    document.getElementById("status").textContent =
+        `⚔️ ${teamName} ${t.added} ${t.countdown} ${finishedStep} ${t.finished}`;
+}
+
+function updateReinforcementCountdown(delta) {
+    if (!reinforcementActive || paused || roundFinished) return;
+
+    reinforcementTimer = Math.max(0, reinforcementTimer - delta);
+    cdTimer.textContent = `${Math.ceil(reinforcementTimer)} сек`;
+
+    if (reinforcementTimer <= 0) {
+        const finishedStep = countdownStep;
+        hideCountdownBanner();
+        battleActive = true;
+        document.getElementById('status').textContent =
+            `⚔️ Время отсчёта ${finishedStep} вышло — бой продолжается!`;
+    }
+}
+
+function hideVictoryModal() {
+    victoryModal.classList.remove('active');
+    roundFinished = false;
+}
+
+function showFinalWinner(winnerTeam) {
+    if (roundFinished) return;
+
+    roundFinished = true;
+    battleActive = false;
+    hideCountdownBanner();
+
+    const translations = {
+        en: {
+            blue: "Blue Army",
+            red: "Red Army",
+            titleBlue: "🏆 Blue team wins!",
+            titleRed: "🏆 Red team wins!",
+            details: "After the 3rd countdown, victory goes to",
+            losses: "Total losses:",
+            status: "🏆 Winner:"
+        },
+        ru: {
+            blue: "Синяя армия",
+            red: "Красная армия",
+            titleBlue: "🏆 Победили синие!",
+            titleRed: "🏆 Победили красные!",
+            details: "После 3-го отсчёта победу одержала",
+            losses: "Общие потери:",
+            status: "🏆 Победитель:"
+        },
+        hy: {
+            blue: "Կապույտ բանակը",
+            red: "Կարմիր բանակը",
+            titleBlue: "🏆 Հաղթեցին կապույտները!",
+            titleRed: "🏆 Հաղթեցին կարմիրները!",
+            details: "3-րդ հետհաշվարկից հետո հաղթեց",
+            losses: "Ընդհանուր կորուստներ՝",
+            status: "🏆 Հաղթող՝"
+        },
+        fr: {
+            blue: "L'armée bleue",
+            red: "L'armée rouge",
+            titleBlue: "🏆 L'équipe bleue gagne !",
+            titleRed: "🏆 L'équipe rouge gagne !",
+            details: "Après le 3e compte à rebours, la victoire revient à",
+            losses: "Pertes totales :",
+            status: "🏆 Vainqueur :"
+        },
+        de: {
+            blue: "Die blaue Armee",
+            red: "Die rote Armee",
+            titleBlue: "🏆 Das blaue Team gewinnt!",
+            titleRed: "🏆 Das rote Team gewinnt!",
+            details: "Nach dem 3. Countdown gewinnt",
+            losses: "Gesamtverluste:",
+            status: "🏆 Sieger:"
+        },
+        "pt-BR": {
+            blue: "Exército azul",
+            red: "Exército vermelho",
+            titleBlue: "🏆 A equipe azul venceu!",
+            titleRed: "🏆 A equipe vermelha venceu!",
+            details: "Após a 3ª contagem regressiva, a vitória é do",
+            losses: "Perdas totais:",
+            status: "🏆 Vencedor:"
+        },
+        ar: {
+            blue: "الجيش الأزرق",
+            red: "الجيش الأحمر",
+            titleBlue: "🏆 الفريق الأزرق يفوز!",
+            titleRed: "🏆 الفريق الأحمر يفوز!",
+            details: "بعد العد التنازلي الثالث، انتصر",
+            losses: "إجمالي الخسائر:",
+            status: "🏆 الفائز:"
+        }
+    };
+
+    const lang = translations[currentLanguage] 
+        ? currentLanguage 
+        : "en";
+
+    const t = translations[lang];
+
+    const isBlue = winnerTeam === "blue";
+    const winnerName = isBlue ? t.blue : t.red;
+
+    victoryTitle.textContent = isBlue
+        ? t.titleBlue
+        : t.titleRed;
+
+    victoryDetails.textContent =
+        `${t.details} ${winnerName}. ${t.losses} ${totalLosses}.`;
+
+    document.getElementById("status").textContent =
+        `${t.status} ${winnerName}!`;
+
+    victoryModal.classList.add("active");
+}
+
+function hasAliveUnits(team) {
+    return (
+        soldiers.some(s => s.userData.alive && s.userData.team === team) ||
+        tanks.some(t => t.userData.alive && t.userData.team === team) ||
+        artillery.some(a => a.userData.alive && a.userData.team === team) ||
+        flyingTeslas.some(f => f.alive && f.health > 0 && f.team === team)
+    );
+}
+
+function checkBattleOutcome() {
+    if (!battleActive || paused || roundFinished || reinforcementActive) return;
+
+    const blueAlive = hasAliveUnits('blue');
+    const redAlive = hasAliveUnits('red');
+
+    if (blueAlive && redAlive) return;
+
+    let wipedTeam = null;
+    if (!blueAlive && !redAlive) {
+        wipedTeam = wipedTeamWaiting === 'blue' ? 'red' : 'blue';
+    } else if (!redAlive) {
+        wipedTeam = 'red';
+    } else if (!blueAlive) {
+        wipedTeam = 'blue';
+    }
+
+    const survivingTeam = wipedTeam === 'blue' ? 'red' : 'blue';
+
+    if (countdownStep >= MAX_COUNTDOWNS) {
+        showFinalWinner(survivingTeam);
+        return;
+    }
+
+    startCountdownStep(wipedTeam);
+}
+
+function getArmyCount(team) {
+    return armyUnits[team].filter(u => !u.released).length;
+}
+
+function registerArmyUnit(team, slot, members) {
+    const anchor = members[0].mesh ? members[0].mesh.position : members[0].position;
+    const unit = {
+        team,
+        slot,
+        x: anchor.x,
+        z: anchor.z,
+        members,
+        released: false
+    };
+    armyUnits[team].push(unit);
+
+    for (const member of members) {
+        if (member.mesh) {
+            member.armyUnit = unit;
+        } else {
+            member.userData.armyUnit = unit;
+        }
+    }
+
+    resolveUnitCollisions(2);
+    if (reinforcementActive) {
+        resumeBattleImmediatelyAfterReinforcement(team);
+    }
+    return unit;
+}
+
+function checkDestroyedArmyUnit(member) {
+    const unit = member.mesh ? member.armyUnit : member.userData.armyUnit;
+    if (!unit || unit.released) return;
+
+    const allDead = unit.members.every(item => {
+        if (item.mesh) return item.health <= 0 || !item.alive;
+        return item.userData.alive === false || item.userData.health <= 0;
+    });
+
+    if (allDead) {
+        unit.released = true;
+        spawnSlots[unit.team][unit.slot] = false;
+        destroyedPositions[unit.team].push({ x: unit.x, z: unit.z, slot: unit.slot });
+    }
+}
+
+function getChosenSpawnPosition(team) {
+    if (getArmyCount(team) >= MAX_ARMY_UNITS) {
+        document.getElementById('status').textContent = '⛔ Максимум 12 единиц армии!';
+        return null;
+    }
+
+    const centerX = team === 'blue' ? -25 : 25;
+
+    if (destroyedPositions[team].length > 0) {
+        const saved = destroyedPositions[team].shift();
+        const slot = saved.slot ?? 0;
+        spawnSlots[team][slot] = true;
+        return { x: saved.x, z: saved.z, slot };
+    }
+
+    const slot = spawnSlots[team].findIndex(occupied => !occupied);
+    if (slot === -1) {
+        document.getElementById('status').textContent = '⛔ Все 12 мест заняты!';
+        return null;
+    }
+
+    spawnSlots[team][slot] = true;
+    const col = slot % 3;
+    const row = Math.floor(slot / 3);
+    return {
+        x: centerX + (col - 1) * 8.5,
+        z: 32 + row * 8.5,
+        slot
+    };
+}
+
+function updateStats() {
+    document.getElementById('losses').textContent = totalLosses;
+}
+
+function createArmies() {
+    for (const s of soldiers) scene.remove(s);
+    for (const t of tanks) scene.remove(t);
+    for (const a of artillery) scene.remove(a);
+    for (const f of flyingTeslas) scene.remove(f.mesh);
+
+    soldiers.length = 0;
+    tanks.length = 0;
+    artillery.length = 0;
+    flyingTeslas.length = 0;
+    armyUnits.blue.length = 0;
+    armyUnits.red.length = 0;
+    destroyedPositions.blue.length = 0;
+    destroyedPositions.red.length = 0;
+    spawnSlots.blue.fill(false);
+    spawnSlots.red.fill(false);
+
+    countdownStep = 0;
+    hideCountdownBanner();
+    hideVictoryModal();
+    updateRoundHud();
+
+    totalLosses = 0;
+    updateStats();
+
+    for (const team of ['blue', 'red']) {
+        const mat = team === 'blue' ? materials.blue : materials.red;
+        const p1 = getChosenSpawnPosition(team);
+        if (p1) {
+            const group = [];
+            for (let i = 0; i < 5; i++) {
+                group.push(createSoldier(team, p1.x + (i % 3) * 2.2 - 2.2, p1.z + Math.floor(i / 3) * 3.2));
+            }
+            registerArmyUnit(team, p1.slot, group);
+        }
+        const p2 = getChosenSpawnPosition(team);
+        if (p2) {
+            const tank = createMilitaryTank(p2.x, p2.z, mat);
+            registerArmyUnit(team, p2.slot, [tank]);
+        }
+    }
+
+    resolveUnitCollisions(3);
+}
+
+// ==================================================
+// 8. БОЕВАЯ ЛОГИКА И ЭФФЕКТЫ
+// ==================================================
+
+function distanceBetween(a, b) {
+    return Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z);
+}
+
+function findNearestEnemy(soldier) {
+    let nearest = null;
+    let best = Infinity;
+    for (const other of soldiers) {
+        if (!other.userData.alive || other.userData.team === soldier.userData.team) continue;
+        const d = distanceBetween(soldier, other);
+        if (d < best) {
+            best = d;
+            nearest = other;
+        }
+    }
+    return nearest;
+}
+
+function findNearestEnemyUnit(tank) {
+    let nearest = null;
+    let best = Infinity;
+    for (const list of [artillery, tanks, soldiers]) {
+        for (const enemy of list) {
+            if (!enemy.userData.alive || enemy.userData.team === tank.userData.team) continue;
+            const d = tank.position.distanceTo(enemy.position);
+            if (d < best) {
+                best = d;
+                nearest = enemy;
+            }
+        }
+    }
+    return nearest;
+}
+
+function findNearestArtilleryTarget(gun) {
+    let nearest = null;
+    let best = Infinity;
+    for (const list of [tanks, soldiers, artillery]) {
+        for (const enemy of list) {
+            if (!enemy.userData.alive || enemy.userData.team === gun.userData.team) continue;
+            const d = gun.position.distanceTo(enemy.position);
+            if (d < best) {
+                best = d;
+                nearest = enemy;
+            }
+        }
+    }
+    return nearest;
+}
+
+function createBullet(from, to, team) {
+    const color = team === 'blue' ? 0x3399ff : 0xff3333;
+    const bullet = new THREE.Group();
+
+    const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.055, 0.09, 0.65, 8),
+        new THREE.MeshBasicMaterial({ color })
+    );
+    body.rotation.x = Math.PI / 2;
+    bullet.add(body);
+
+    const tip = new THREE.Mesh(
+        new THREE.SphereGeometry(0.09, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    tip.position.z = -0.34;
+    bullet.add(tip);
+
+    const startY = from.position.y > 3 ? from.position.y : from.position.y + 1.4;
+    bullet.position.set(from.position.x, startY, from.position.z);
+    scene.add(bullet);
+
+    const start = bullet.position.clone();
+    const end = new THREE.Vector3(to.position.x, to.position.y + 1.4, to.position.z);
+    const direction = end.clone().sub(start).normalize();
+    bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
+
+    bullet.userData = {
+        direction,
+        distance: start.distanceTo(end),
+        traveled: 0,
+        speed: 40
+    };
+    bullets.push(bullet);
+}
+
+function createDamageEffect(targetObj, smokeY, fireY, list, key) {
+    const group = new THREE.Group();
+    const smoke = new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0x333333, transparent: true, opacity: 0.6 })
+    );
+    smoke.position.y = smokeY;
+    group.add(smoke);
+
+    const fire = new THREE.Mesh(
+        new THREE.SphereGeometry(0.4, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.8 })
+    );
+    fire.position.y = fireY;
+    fire.visible = false;
+    group.add(fire);
+
+    targetObj.add(group);
+    list.push({ [key]: targetObj, smoke, fire, time: 0 });
+}
+
+function updateUnitBar(data, onDamageEffect) {
+    if (!data.healthFill) return;
+    const pct = Math.max(0, data.health / data.maxHealth);
+    const half = data.barWidth / 2;
+    data.healthFill.scale.x = pct;
+    data.healthFill.position.x = -half * (1 - pct);
+
+    if (pct > 0.6) data.healthFill.material.color.set(0x00ff00);
+    else if (pct > 0.3) data.healthFill.material.color.set(0xffff00);
+    else data.healthFill.material.color.set(0xff0000);
+
+    if (onDamageEffect) onDamageEffect(pct);
+}
+
+function updateTankHealth(tank) {
+    const d = tank.userData;
+    updateUnitBar(d, pct => {
+        if (pct <= 0.6 && !d.effectCreated) {
+            createDamageEffect(tank, 4.5, 3.8, tankEffects, 'tank');
+            d.effectCreated = true;
+        }
+        if (pct <= 0.3) {
+            const eff = tankEffects.find(item => item.tank === tank);
+            if (eff) eff.fire.visible = true;
+        }
+    });
+}
+
+function updateArtilleryHealth(gun) {
+    const d = gun.userData;
+    updateUnitBar(d, pct => {
+        if (pct <= 0.6 && !d.effectCreated) {
+            createDamageEffect(gun, 3.5, 2.8, artilleryEffects, 'gun');
+            d.effectCreated = true;
+        }
+        if (pct <= 0.3) {
+            const eff = artilleryEffects.find(item => item.gun === gun);
+            if (eff) eff.fire.visible = true;
+        }
+    });
+}
+
+function createExplosion(x, y, z) {
+    sfx.play('explosion');
+    const group = new THREE.Group();
+    const fire = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 14, 14),
+        new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.95 })
+    );
+    const flash = new THREE.Mesh(
+        new THREE.SphereGeometry(0.65, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 1 })
+    );
+    const smoke = new THREE.Mesh(
+        new THREE.SphereGeometry(0.85, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0x333333, transparent: true, opacity: 0.72 })
+    );
+    smoke.position.y = 0.5;
+    group.add(fire, flash, smoke);
+    group.position.set(x, y, z);
+    scene.add(group);
+
+    group.userData = { time: 0, maxTime: 1.2, fire, flash, smoke };
+    explosions.push(group);
+}
+
+function createTankDebris(tank) {
+    for (let i = 0; i < 10; i++) {
+        const piece = new THREE.Mesh(
+            new THREE.BoxGeometry(0.3 + Math.random() * 0.4, 0.2 + Math.random() * 0.3, 0.3 + Math.random() * 0.4),
+            materials.metal
+        );
+        piece.position.set(tank.position.x, tank.position.y + 1, tank.position.z);
+        piece.castShadow = true;
+        scene.add(piece);
+        debris.push({
+            mesh: piece,
+            vx: (Math.random() - 0.5) * 12,
+            vy: 4 + Math.random() * 8,
+            vz: (Math.random() - 0.5) * 12,
+            rotationSpeed: Math.random() * 8,
+            life: 3
+        });
+    }
+}
+
+function handleUnitDeath(enemy) {
+    if (!enemy.userData.alive) return;
+    enemy.userData.alive = false;
+    enemy.visible = false;
+    totalLosses++;
+    createExplosion(enemy.position.x, enemy.position.y + 1.5, enemy.position.z);
+    if (tanks.includes(enemy)) createTankDebris(enemy);
+    checkDestroyedArmyUnit(enemy);
+}
+
+function updateBattle(delta) {
+    if (paused || roundFinished) return;
+
+    if (reinforcementActive) {
+        updateReinforcementCountdown(delta);
+        resolveUnitCollisions(1);
+        return;
+    }
+
+    if (!battleActive) return;
+
+    for (const soldier of soldiers) {
+        if (!soldier.userData.alive) continue;
+        const data = soldier.userData;
+        data.attackCooldown -= delta;
+
+        const enemy = findNearestEnemy(soldier);
+        if (!enemy) continue;
+
+        const dist = distanceBetween(soldier, enemy);
+        if (dist > 12) {
+            const baseX = data.team === 'blue' ? -25 : 25;
+            const insideBase = Math.abs(soldier.position.x - baseX) < 15 && Math.abs(soldier.position.z) < 16.5;
+            const targetX = insideBase ? baseX : enemy.position.x;
+            const targetZ = insideBase ? 24 : enemy.position.z;
+
+            const dx = targetX - soldier.position.x;
+            const dz = targetZ - soldier.position.z;
+            const len = Math.hypot(dx, dz);
+            if (len > 0.1) {
+                const speed = 2.4;
+                soldier.position.x += (dx / len) * speed * delta;
+                soldier.position.z += (dz / len) * speed * delta;
+                soldier.position.y = getEntitySupportY(soldier.position.x, soldier.position.z);
+                soldier.rotation.y = Math.atan2(dx, dz);
+            }
+            data.leftLeg.rotation.x = Math.sin(elapsedTime * 8 + data.phase) * 0.5;
+            data.rightLeg.rotation.x = -Math.sin(elapsedTime * 8 + data.phase) * 0.5;
+        } else if (data.attackCooldown <= 0) {
+            createBullet(soldier, enemy, data.team);
+            sfx.play('shot');
+            enemy.userData.health -= 20;
+            if (tanks.includes(enemy)) updateTankHealth(enemy);
+            if (artillery.includes(enemy)) updateArtilleryHealth(enemy);
+            data.attackCooldown = 0.8;
+            if (enemy.userData.health <= 0) handleUnitDeath(enemy);
+        }
+    }
+
+    for (const tank of tanks) {
+        if (!tank.userData.alive) continue;
+        tank.userData.attackCooldown -= delta;
+        const enemy = findNearestEnemyUnit(tank);
+        if (!enemy) continue;
+
+        const dx = enemy.position.x - tank.position.x;
+        const dz = enemy.position.z - tank.position.z;
+        tank.rotation.y = Math.atan2(dx, dz) + Math.PI;
+        const dist = Math.hypot(dx, dz);
+
+        if (dist > 35) {
+            const speed = 4.2;
+            tank.position.x += (dx / dist) * speed * delta;
+            tank.position.z += (dz / dist) * speed * delta;
+            tank.position.y = getEntitySupportY(tank.position.x, tank.position.z);
+        } else if (dist < 120 && tank.userData.attackCooldown <= 0) {
+            createBullet(tank, enemy, tank.userData.team);
+            sfx.play('tank');
+            enemy.userData.health -= 100;
+            if (tanks.includes(enemy)) updateTankHealth(enemy);
+            if (artillery.includes(enemy)) updateArtilleryHealth(enemy);
+            tank.userData.attackCooldown = 3;
+            if (enemy.userData.health <= 0) handleUnitDeath(enemy);
+        }
+    }
+
+    for (const gun of artillery) {
+        if (!gun.userData.alive) continue;
+        gun.userData.attackCooldown -= delta;
+        const enemy = findNearestArtilleryTarget(gun);
+        if (!enemy) continue;
+
+        const dx = enemy.position.x - gun.position.x;
+        const dz = enemy.position.z - gun.position.z;
+        gun.rotation.y = Math.atan2(dx, dz) + Math.PI;
+        const dist = Math.hypot(dx, dz);
+
+        if (dist < 120 && gun.userData.attackCooldown <= 0) {
+            createBullet(gun, enemy, gun.userData.team);
+            sfx.play('artillery');
+            createExplosion(enemy.position.x, enemy.position.y + 1.5, enemy.position.z);
+            enemy.userData.health -= 150;
+            if (tanks.includes(enemy)) updateTankHealth(enemy);
+            if (artillery.includes(enemy)) updateArtilleryHealth(enemy);
+            gun.userData.attackCooldown = 5;
+            if (enemy.userData.health <= 0) handleUnitDeath(enemy);
+        }
+    }
+
+    for (const tesla of flyingTeslas) {
+        if (!tesla.alive || tesla.health <= 0) continue;
+        tesla.cooldown -= delta;
+
+        let nearestEnemy = null;
+        let best = Infinity;
+        let enemyIsTesla = false;
+
+        for (const otherTesla of flyingTeslas) {
+            if (otherTesla === tesla || !otherTesla.alive || otherTesla.health <= 0 || otherTesla.team === tesla.team) continue;
+            const d = tesla.mesh.position.distanceTo(otherTesla.mesh.position);
+            if (d < best && d < 120) {
+                best = d;
+                nearestEnemy = otherTesla;
+                enemyIsTesla = true;
+            }
+        }
+
+        for (const group of [soldiers, tanks, artillery]) {
+            for (const enemy of group) {
+                if (!enemy.userData.alive || enemy.userData.team === tesla.team) continue;
+                const d = tesla.mesh.position.distanceTo(enemy.position);
+                if (d < best && d < 120) {
+                    best = d;
+                    nearestEnemy = enemy;
+                    enemyIsTesla = false;
+                }
+            }
+        }
+
+        if (nearestEnemy && tesla.cooldown <= 0) {
+            const targetObj = enemyIsTesla ? nearestEnemy.mesh : nearestEnemy;
+            createBullet({ position: tesla.mesh.position }, targetObj, tesla.team);
+            sfx.play('tesla');
+
+            if (enemyIsTesla) {
+                nearestEnemy.health -= 50;
+                updateUnitBar(nearestEnemy, null);
+                if (nearestEnemy.health <= 0) {
+                    nearestEnemy.alive = false;
+                    nearestEnemy.mesh.visible = false;
+                    totalLosses++;
+                    createExplosion(nearestEnemy.mesh.position.x, nearestEnemy.mesh.position.y, nearestEnemy.mesh.position.z);
+                    checkDestroyedArmyUnit(nearestEnemy);
+                }
+            } else {
+                nearestEnemy.userData.health -= 50;
+                if (tanks.includes(nearestEnemy)) updateTankHealth(nearestEnemy);
+                if (artillery.includes(nearestEnemy)) updateArtilleryHealth(nearestEnemy);
+                if (nearestEnemy.userData.health <= 0) handleUnitDeath(nearestEnemy);
+            }
+            tesla.cooldown = 1.2;
+        }
+    }
+
+    resolveUnitCollisions(2);
+    updateStats();
+    checkBattleOutcome();
+}
+
+// ==================================================
+// 9. ПАНЕЛИ ВЫЗОВА И КНОПКИ
+// ==================================================
+
+const icons = {
+    jeep: `<svg viewBox="0 0 100 75"><rect x="17" y="30" width="66" height="22" rx="5" fill="#9ba58b"/><rect x="34" y="17" width="34" height="18" rx="4" fill="#647b82"/><circle cx="28" cy="55" r="10" fill="#222"/><circle cx="72" cy="55" r="10" fill="#222"/></svg>`,
+    truck: `<svg viewBox="0 0 100 75"><rect x="8" y="18" width="55" height="32" rx="3" fill="#9ba58b"/><rect x="63" y="30" width="27" height="25" rx="3" fill="#71866b"/><circle cx="25" cy="57" r="10" fill="#222"/><circle cx="75" cy="57" r="10" fill="#222"/></svg>`,
+    tank: `<svg viewBox="0 0 100 75"><rect x="8" y="39" width="84" height="24" rx="11" fill="#252d24"/><rect x="17" y="34" width="66" height="18" rx="5" fill="#899779"/><rect x="34" y="24" width="35" height="16" rx="5" fill="#718568"/><rect x="62" y="28" width="32" height="5" rx="2" fill="#718568"/></svg>`,
+    artillery: `<svg viewBox="0 0 100 75"><circle cx="25" cy="55" r="12" fill="#252525"/><circle cx="75" cy="55" r="12" fill="#252525"/><rect x="30" y="37" width="40" height="12" rx="3" fill="#879477"/><path d="M47 38 L25 12 L32 8 L59 35 Z" fill="#596b53"/></svg>`,
+    flyingTesla: `<svg viewBox="0 0 100 75"><text x="50" y="34" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fff">FLYING</text><text x="50" y="55" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#ffd700">TESLA</text></svg>`,
+    soldier: `<svg viewBox="0 0 100 75"><circle cx="42" cy="15" r="10" fill="#d1b08b"/><rect x="30" y="28" width="25" height="25" rx="5" fill="#647b48"/><path d="M35 51 L29 70 L39 70 L44 53 L49 70 L59 70 L51 51 Z" fill="#444c37"/></svg>`
+};
+
+function makeVehicleButton(panel, icon, color, action) {
+    const button = document.createElement('button');
+    button.innerHTML = icon;
+    button.style.cssText = `
+        width: 56px; height: 56px; padding: 4px;
+        background: ${color}; border: 2px solid rgba(255,255,255,0.5);
+        border-radius: 10px; cursor: pointer;
+    `;
+    const svg = button.querySelector('svg');
+    if (svg) {
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+    }
+    button.addEventListener('click', () => {
+        sfx.unlock();
+        action();
+    });
+    button.addEventListener('contextmenu', e => e.preventDefault());
+    panel.appendChild(button);
+}
+
+function createTeamPanel(team) {
+    const panel = document.createElement('div');
+    panel.className = `team-panel team-panel-${team}`;
+    panel.style.cssText = `
+        position: fixed;
+        bottom: 62px;
+        ${team === 'blue' ? 'left: 12px;' : 'right: 12px;'}
+        z-index: 15;
+        display: grid;
+        grid-template-columns: repeat(6, 56px);
+        gap: 5px;
+        padding: 8px;
+        border-radius: 12px;
+        background: ${team === 'blue' ? 'rgba(10,60,140,0.9)' : 'rgba(140,20,20,0.9)'};
+    `;
+
+    const color = team === 'blue' ? '#2769bd' : '#bd3030';
+    const mat = team === 'blue' ? materials.blue : materials.red;
+
+    makeVehicleButton(panel, icons.jeep, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const jeep = createMilitaryJeep(p.x, p.z, mat);
+        setTimeout(() => scene.remove(jeep), 2000);
+        const group = [];
+        for (let i = 0; i < 4; i++) group.push(createSoldier(team, p.x - 3.3 + i * 2.2, p.z + 5.5));
+        for (let i = 0; i < 3; i++) group.push(createSoldier(team, p.x - 2.2 + i * 2.2, p.z + 8.5));
+        registerArmyUnit(team, p.slot, group);
+    });
+
+    makeVehicleButton(panel, icons.truck, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const truck = createMilitaryTruck(p.x, p.z, mat);
+        setTimeout(() => scene.remove(truck), 2000);
+        const group = [];
+        for (let i = 0; i < 5; i++) group.push(createSoldier(team, p.x - 4.4 + i * 2.2, p.z + 5.5));
+        for (let i = 0; i < 5; i++) group.push(createSoldier(team, p.x - 4.4 + i * 2.2, p.z + 8.5));
+        registerArmyUnit(team, p.slot, group);
+    });
+
+    makeVehicleButton(panel, icons.tank, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const tank = createMilitaryTank(p.x, p.z, mat);
+        registerArmyUnit(team, p.slot, [tank]);
+    });
+
+    makeVehicleButton(panel, icons.artillery, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const gun = createArtillery(p.x, p.z, mat);
+        registerArmyUnit(team, p.slot, [gun]);
+    });
+
+    makeVehicleButton(panel, icons.flyingTesla, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const tesla = createFlyingTesla(p.x, p.z, team);
+        registerArmyUnit(team, p.slot, [tesla]);
+    });
+
+    makeVehicleButton(panel, icons.soldier, color, () => {
+        const p = getChosenSpawnPosition(team);
+        if (!p) return;
+        const group = [];
+        for (let i = 0; i < 5; i++) {
+            group.push(createSoldier(team, p.x + (i % 3) * 2.2 - 2.2, p.z + Math.floor(i / 3) * 3.2));
+        }
+        registerArmyUnit(team, p.slot, group);
+    });
+
+    document.body.appendChild(panel);
+}
+
+createTeamPanel('blue');
+createTeamPanel('red');
+
+function startNewGame() {
+    sfx.unlock();
+    battleActive = false;
+    paused = false;
+    roundFinished = false;
+    elapsedTime = 0;
+    document.getElementById('pauseButton').textContent = '⏸️ Пауза';
+    createArmies();
+    document.getElementById('status').textContent = '🌍 Новая игра готова. Нажми «Начать битву».';
+}
+
+document.getElementById('battleButton').addEventListener('click', () => {
+    sfx.unlock();
+    if (roundFinished) startNewGame();
+    hideCountdownBanner();
+    battleActive = true;
+    paused = false;
+    document.getElementById('pauseButton').textContent = '⏸️ Пауза';
+    document.getElementById('status').textContent = '⚔️ Битва началась! Войска выдвигаются.';
+});
+
+document.getElementById('pauseButton').addEventListener('click', () => {
+    sfx.unlock();
+    if (roundFinished) return;
+    paused = !paused;
+    document.getElementById('pauseButton').textContent = paused ? '▶️ Продолжить' : '⏸️ Пауза';
+    document.getElementById('status').textContent = paused ? '⏸️ Игра на паузе.' : '▶️ Игра продолжается.';
+});
+
+document.getElementById('resetButton').addEventListener('click', startNewGame);
+document.getElementById('playAgainButton').addEventListener('click', startNewGame);
+
+// ==================================================
+// 10. КАМЕРА И ЦИКЛ РЕНДЕРА
+// ==================================================
+
+let rotationY = 0;
+let cameraDistance = 65;
+let cameraHeight = 40;
+let dragging = false;
+let previousX = 0;
+let previousY = 0;
+
+let activePointers = new Map();
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+let previousPinchDistance = 0;
+
+function getPinchDistance() {
+    const points = Array.from(activePointers.values());
+    const dx = points[0].x - points[1].x;
+    const dy = points[0].y - points[1].y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+canvas.addEventListener('pointerdown', e => {
+    activePointers.set(e.pointerId, {
+        x: e.clientX,
+        y: e.clientY
+    });
+
+    dragging = activePointers.size === 1;
+
+    previousX = e.clientX;
+    previousY = e.clientY;
+
+    if (activePointers.size === 2) {
+        dragging = false;
+        previousPinchDistance = getPinchDistance();
+    }
+
+    canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener('pointermove', e => {
+    if (!activePointers.has(e.pointerId)) return;
+
+    const oldX = activePointers.get(e.pointerId).x;
+    const oldY = activePointers.get(e.pointerId).y;
+
+    activePointers.set(e.pointerId, {
+        x: e.clientX,
+        y: e.clientY
+    });
+
+    if (activePointers.size === 1) {
+        rotationY -= (e.clientX - oldX) * 0.005;
+
+        cameraHeight = Math.max(
+            8,
+            Math.min(60, cameraHeight + (e.clientY - oldY) * 0.05)
+        );
+    }
+
+    if (activePointers.size === 2) {
+        const newDistance = getPinchDistance();
+
+        cameraDistance = Math.max(
+            18,
+            Math.min(150, cameraDistance - (newDistance - previousPinchDistance) * 0.15)
+        );
+
+        previousPinchDistance = newDistance;
+    }
+});
+
+function removePointer(e) {
+    activePointers.delete(e.pointerId);
+    dragging = false;
+    previousPinchDistance = 0;
+}
+
+canvas.addEventListener('pointerup', removePointer);
+canvas.addEventListener('pointercancel', removePointer);
+
+canvas.addEventListener('wheel', e => {
+    cameraDistance = Math.max(
+        18,
+        Math.min(150, cameraDistance + e.deltaY * 0.025)
+    );
+}, { passive: true });
+
+function resizeGame() {
+    const width = Math.max(1, window.innerWidth);
+    const height = Math.max(1, window.innerHeight);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+    renderer.setPixelRatio(Math.min(
+        window.devicePixelRatio || 1,
+        maxRenderPixelRatio
+    ));
+}
+
+window.addEventListener('resize', resizeGame);
+window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', resizeGame);
+}
+resizeGame();
+
+const gameClock = new THREE.Clock();
+
+// ======================================
+// TIKFINITY: ПОДАРКИ → ПОДКРЕПЛЕНИЯ
+// ======================================
+
+const TF_PARAMS = new URLSearchParams(location.search);
+const TF_URL = `ws://${TF_PARAMS.get('tf') || 'localhost'}:21213/`;
+
+const GIFT_TEAM = {
+    'rose': 'blue',
+    'роза': 'blue',
+    'tiktok': 'red'
+};
+
+const GIFT_KIND = {
+    'rose': 'soldiers',
+    'роза': 'soldiers',
+    'tesla': 'tesla',
+    'артиллерия': 'artillery',
+    'artillery': 'artillery',
+    'jeep': 'jeep',
+    'джип': 'jeep',
+    'truck': 'truck',
+    'грузовик': 'truck',
+    'tank': 'tank',
+    'танк': 'tank'
+};
+const GIFT_TIERS = [
+    { min: 1000, kind: 'tesla',     icon: '⚡' },
+    { min: 300,  kind: 'tank',      icon: '🛡️' },
+    { min: 100,  kind: 'artillery', icon: '💥' },
+    { min: 30,   kind: 'truck',     icon: '🚚' },
+    { min: 5,    kind: 'jeep',      icon: '🚙' },
+    { min: 0,    kind: 'soldiers',  icon: '🪖' }
+];
+
+const MAX_PER_GIFT = 3;
+const MAX_QUEUE = 40;
+const QUEUE_TTL_MS = 60000;
+const SPAWN_EVERY_MS = 350;
+
+let tikfinitySocket = null;
+let tikfinityConnected = false;
+
+function spawnReinforcement(team, kind) {
+    const mat = team === 'blue' ? materials.blue : materials.red;
+    const p = getChosenSpawnPosition(team);
+    if (!p) return false;
+    let group = [];
+
+    if (kind === 'jeep') {
+        const jeep = createMilitaryJeep(p.x, p.z, mat);
+        setTimeout(() => scene.remove(jeep), 2000);
+        for (let i = 0; i < 4; i++) group.push(createSoldier(team, p.x - 3.3 + i * 2.2, p.z + 5.5));
+        for (let i = 0; i < 3; i++) group.push(createSoldier(team, p.x - 2.2 + i * 2.2, p.z + 8.5));
+    } else if (kind === 'truck') {
+        const truck = createMilitaryTruck(p.x, p.z, mat);
+        setTimeout(() => scene.remove(truck), 2000);
+        for (let i = 0; i < 5; i++) group.push(createSoldier(team, p.x - 4.4 + i * 2.2, p.z + 5.5));
+        for (let i = 0; i < 5; i++) group.push(createSoldier(team, p.x - 4.4 + i * 2.2, p.z + 8.5));
+    } else if (kind === 'tank') {
+        group = [createMilitaryTank(p.x, p.z, mat)];
+    } else if (kind === 'artillery') {
+        group = [createArtillery(p.x, p.z, mat)];
+    } else if (kind === 'tesla') {
+        group = [createFlyingTesla(p.x, p.z, team)];
+    } else {
+        for (let i = 0; i < 5; i++) {
+            group.push(createSoldier(team, p.x + (i % 3) * 2.2 - 2.2, p.z + Math.floor(i / 3) * 3.2));
+        }
+    }
+
+    registerArmyUnit(team, p.slot, group);
+    return true;
+}
+
+const giftQueue = [];
+
+function enqueueGift(team, tier, who, label) {
+    if (giftQueue.length >= MAX_QUEUE) return;
+    giftQueue.push({ team, kind: tier.kind, icon: tier.icon, who, label, expires: Date.now() + QUEUE_TTL_MS });
+}
+
+setInterval(() => {
+    if (paused || roundFinished) return;
+
+    const now = Date.now();
+    for (let i = giftQueue.length - 1; i >= 0; i--) {
+        if (giftQueue[i].expires < now) giftQueue.splice(i, 1);
+    }
+
+    const i = giftQueue.findIndex(g => getArmyCount(g.team) < MAX_ARMY_UNITS);
+    if (i === -1) return;
+
+    const g = giftQueue[i];
+    if (spawnReinforcement(g.team, g.kind)) {
+        giftQueue.splice(i, 1);
+        document.getElementById('status').textContent =
+            `🎁 ${g.who}: ${g.label} → ${g.team === 'blue' ? '🔵' : '🔴'} ${g.icon}`;
+    }
+}, SPAWN_EVERY_MS);
+
+function teamStrength(team) {
+    let s = 0;
+    for (const list of [soldiers, tanks, artillery]) {
+        for (const u of list) if (u.userData.alive && u.userData.team === team) s += u.userData.health;
+    }
+    for (const f of flyingTeslas) if (f.alive && f.team === team) s += f.health;
+    return s;
+}
+
+function weakerTeam() {
+    const b = teamStrength('blue');
+    const r = teamStrength('red');
+    if (b === r) return Math.random() < 0.5 ? 'blue' : 'red';
+    return b < r ? 'blue' : 'red';
+}
+
+function handleGift(p) {
+    if (p.giftType === 1 && p.repeatEnd === false) return;
+
+    const name = String(p.giftName || '').trim();
+    const coins = Number(p.diamondCount ?? p.coins ?? 1) || 1;
+    const repeat = Math.min(MAX_PER_GIFT, Math.max(1, Number(p.repeatCount) || 1));
+    
+    const giftKey = name.toLowerCase().replace(/[^a-zа-яё]/g, '');
+    const team = GIFT_TEAM[giftKey] || weakerTeam();
+    const giftKind = GIFT_KIND[giftKey];
+    const tier = giftKind
+        ? GIFT_TIERS.find(t => t.kind === giftKind)
+        : GIFT_TIERS.find(t => coins >= t.min);
+    const who = p.nickname || p.uniqueId || '?';
+
+    for (let i = 0; i < repeat; i++) enqueueGift(team, tier, who, name || `${coins}🪙`);
+}
+
+const tfInfo = document.createElement('div');
+tfInfo.className = 'team';
+tfInfo.style.cssText = 'font-size:11px;line-height:1.5;';
+document.getElementById('topPanel').appendChild(tfInfo);
+
+function renderTfInfo() {
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const names = team => Object.keys(GIFT_TEAM).filter(k => GIFT_TEAM[k] === team).map(cap).join(', ');
+    const tiers = [...GIFT_TIERS].reverse().map(t => `${t.icon}${t.min || 1}`).join(' ');
+    tfInfo.innerHTML =
+        `${tikfinityConnected ? '🟢' : '🔴'} TikFinity<br>` +
+        `🔵 ${names('blue')}<br>🔴 ${names('red')}<br>${tiers}`;
+}
+renderTfInfo();
+
+function connectTikFinity() {
+    try {
+        tikfinitySocket = new WebSocket(TF_URL);
+    } catch (error) {
+        console.log('TikFinity: не удалось создать соединение', error);
+        setTimeout(connectTikFinity, 3000);
+        return;
+    }
+
+    tikfinitySocket.onopen = () => {
+        tikfinityConnected = true;
+        renderTfInfo();
+        console.log('TikFinity подключен!');
+    };
+
+    tikfinitySocket.onmessage = event => {
+        try {
+            const msg = JSON.parse(event.data);
+            const type = msg.event || msg.type;
+            const payload = (msg.data && typeof msg.data === 'object') ? msg.data : msg;
+            if (type === 'gift') {
+                console.log('TikFinity подарок:', payload);
+                handleGift(payload);
+            }
+        } catch (error) {
+            console.log('Ошибка обработки события:', error);
+        }
+    };
+
+    tikfinitySocket.onclose = () => {
+        tikfinityConnected = false;
+        renderTfInfo();
+        setTimeout(connectTikFinity, 3000);
+    };
+
+    tikfinitySocket.onerror = error => console.log('Ошибка TikFinity:', error);
+}
+
+connectTikFinity();
+
+window.simulateGift = (giftName, diamondCount = 1, repeatCount = 1) =>
+    handleGift({ giftName, diamondCount, repeatCount, nickname: 'test' });
+
+if (TF_PARAMS.has('test')) {
+    const box = document.createElement('div');
+    box.style.cssText =
+        'position:fixed;left:6px;top:50%;transform:translateY(-50%);z-index:15;' +
+        'display:grid;grid-template-columns:repeat(2,40px);gap:3px;';
+    for (const tier of [...GIFT_TIERS].reverse()) {
+        for (const team of ['blue', 'red']) {
+            const b = document.createElement('button');
+            b.textContent = (team === 'blue' ? '🔵' : '🔴') + tier.icon;
+            b.style.cssText = 'padding:6px 2px;font-size:12px;';
+            b.addEventListener('click', () => enqueueGift(team, tier, 'test', 'тест'));
+            box.appendChild(b);
+        }
+    }
+    document.body.appendChild(box);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = Math.min(gameClock.getDelta(), 0.05);
+
+    if (battleActive && !paused && !roundFinished && !reinforcementActive) {
+        elapsedTime += delta;
+    }
+
+    const min = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+    const sec = String(Math.floor(elapsedTime % 60)).padStart(2, '0');
+    document.getElementById('clock').textContent = `${min}:${sec}`;
+
+    updateBattle(delta);
+
+    searchBeams.forEach((beam, idx) => {
+        beam.rotation.y = Math.sin(Date.now() * 0.0005 + idx * Math.PI / 2) * 0.8;
+    });
+
+    for (const unitList of [tanks, artillery]) {
+        for (const unit of unitList) {
+            if (!unit.userData.alive || !unit.userData.healthBar) continue;
+            unit.userData.healthBar.quaternion.copy(unit.quaternion).invert().multiply(camera.quaternion);
+        }
+    }
+
+    for (const tesla of flyingTeslas) {
+        if (!tesla.alive || tesla.health <= 0) continue;
+        tesla.mesh.position.y = tesla.baseY + Math.sin(elapsedTime * 2.5) * 0.4;
+        tesla.healthBar.quaternion.copy(tesla.mesh.quaternion).invert().multiply(camera.quaternion);
+    }
+
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        const step = b.userData.speed * delta;
+        b.position.addScaledVector(b.userData.direction, step);
+        b.userData.traveled += step;
+        if (b.userData.traveled >= b.userData.distance) {
+            scene.remove(b);
+            bullets.splice(i, 1);
+        }
+    }
+
+    for (const eff of tankEffects) {
+        if (!eff.tank.userData.alive) continue;
+        eff.time += delta;
+        eff.smoke.position.y = 4.5 + Math.sin(eff.time * 3) * 0.3;
+        if (eff.fire.visible) eff.fire.scale.setScalar(0.8 + Math.sin(eff.time * 10) * 0.3);
+    }
+
+    for (const eff of artilleryEffects) {
+        if (!eff.gun.userData.alive) continue;
+        eff.time += delta;
+        eff.smoke.position.y = 3.5 + Math.sin(eff.time * 3) * 0.3;
+        if (eff.fire.visible) eff.fire.scale.setScalar(0.8 + Math.sin(eff.time * 10) * 0.3);
+    }
+
+    for (let i = explosions.length - 1; i >= 0; i--) {
+        const exp = explosions[i];
+        const d = exp.userData;
+        d.time += delta;
+        const p = Math.min(d.time / d.maxTime, 1);
+        d.fire.scale.setScalar(1 + p * 3);
+        d.fire.material.opacity = 0.95 * (1 - p);
+        d.flash.scale.setScalar(1 + p * 2);
+        d.flash.material.opacity = 1 - p;
+        d.smoke.position.y = 0.5 + p * 3;
+        d.smoke.scale.setScalar(1 + p * 2);
+        d.smoke.material.opacity = 0.7 * (1 - p);
+
+        if (p >= 1) {
+            scene.remove(exp);
+            exp.traverse(obj => {
+                if (obj.isMesh) {
+                    obj.geometry.dispose();
+                    obj.material.dispose();
+                }
+            });
+            explosions.splice(i, 1);
+        }
+    }
+
+    for (let i = debris.length - 1; i >= 0; i--) {
+        const item = debris[i];
+        const piece = item.mesh;
+        piece.position.x += item.vx * delta;
+        piece.position.z += item.vz * delta;
+        item.vy -= 15 * delta;
+        piece.position.y += item.vy * delta;
+        piece.rotation.x += item.rotationSpeed * delta;
+        piece.rotation.y += item.rotationSpeed * delta;
+
+        const floorY = getEntitySupportY(piece.position.x, piece.position.z) + 0.2;
+        if (piece.position.y <= floorY) {
+            piece.position.y = floorY;
+            item.vy = item.vx = item.vz = 0;
+        }
+        item.life -= delta;
+        if (item.life <= 0) {
+            scene.remove(piece);
+            piece.geometry.dispose();
+            piece.material.dispose();
+            debris.splice(i, 1);
+        }
+    }
+
+    for (const gate of gates) {
+        const d = gate.userData;
+        let shouldOpen = false;
+
+        for (const s of soldiers) {
+            if (s.userData.alive && s.userData.team === d.team &&
+                Math.hypot(s.position.x - gate.position.x, s.position.z - gate.position.z) < 12) {
+                shouldOpen = true;
+                break;
+            }
+        }
+        if (!shouldOpen) {
+            for (const v of vehicles) {
+                if (v.userData.team === d.team &&
+                    Math.hypot(v.position.x - gate.position.x, v.position.z - gate.position.z) < 22) {
+                    shouldOpen = true;
+                    break;
+                }
+            }
+        }
+        if (!shouldOpen) {
+            for (const t of tanks) {
+                if (t.userData.alive && t.userData.team === d.team &&
+                    Math.hypot(t.position.x - gate.position.x, t.position.z - gate.position.z) < 22) {
+                    shouldOpen = true;
+                    break;
+                }
+            }
+        }
+
+        const target = shouldOpen ? 1 : 0;
+        d.openAmount += (target - d.openAmount) * Math.min(delta * 3, 1);
+        d.leftGate.position.x = -1.75 - 5.5 * d.openAmount;
+        d.rightGate.position.x = 1.75 + 5.5 * d.openAmount;
+    }
+
+    camera.position.x = Math.sin(rotationY) * cameraDistance;
+    camera.position.z = Math.cos(rotationY) * cameraDistance;
+    camera.position.y = cameraHeight;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+}
+
+try {
+    createArmies();
+    camera.position.set(0, cameraHeight, cameraDistance);
+    camera.lookAt(0, 0, 0);
+    animate();
+    document.getElementById('status').textContent = '✅ Мир загружен! Нажми «Начать битву».';
+} catch (error) {
+    console.error(error);
+    document.getElementById('status').textContent = 'Ошибка запуска. Открой консоль (F12).';
+}
+</script>
+</body>
+</html>
